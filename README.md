@@ -134,6 +134,22 @@ scripts/fault-test.sh kill-api                # 故障測試：docker kill API�
 - **稽核**：帳變表已是 append-only，還需要資料庫層禁止 UPDATE/DELETE 的權限、定期的不變式巡檢與告警、操作留痕。
 - 連線池與資料庫連線上限的容量規劃（壓測時池 200、`max_connections` 300）、PgBouncer、逾時與熔斷、結構化日誌與指標（OpenTelemetry）。
 
+## 老虎機（遊戲商）
+
+除了錢包，repo 裡還有一個完整的「遊戲商」：5×3、10 線老虎機的數學、RTP 模擬器，以及串接錢包的遊戲伺服器（Cocos 前端在另一個專案）。
+
+- **Slot.Core / Slot.RtpSimulator**：連線算分、WILD、伺服器端 RNG；完整列舉 + 蒙地卡羅算 RTP，並有調參器。正式設定 **RTP 95.995%**（1,000 萬局模擬 95.981%）。見 [`docs/slot-math.md`](docs/slot-math.md)。
+- **Slot.GameServer**：`/provider/launch`、`/game/init`、`/game/spin`、`/game/last-round`；結果完全由伺服器決定，錢包 bet / settle / rollback 全部冪等，**補派彩 Worker 保證玩家贏的錢不會因為網路問題消失**。見 [`docs/slot-server.md`](docs/slot-server.md)。
+- 從 Demo 頁（`/`）按「開始遊戲」，錢包（平台）會簽章呼叫遊戲商開局並拿回 `gameUrl` + token。
+- **實測**：1 萬局 `slot.rounds` 與錢包 ledger 逐項相同（總下注、總贏分、筆數）；spin P95 46.7 ms；錢包停機 40 秒的故障測試，0 局卡住、餘額零誤差。
+
+```bash
+docker compose up -d --build                                   # 錢包 :8080、遊戲伺服器 :8081
+dotnet run --project src/Slot.RtpSimulator -c Release -- --spins 10000000    # RTP 報表
+scripts/run-k6.sh 04-slot-spins                                # 1 萬局；結束後 scripts/verify-slot-run.sh <RUN_ID> 對 ledger
+scripts/slot-fault-test.sh                                     # 連轉中把錢包停機再恢復
+```
+
 ## 專案結構
 
 ```
@@ -141,12 +157,16 @@ src/Wallet.Api              Web API、簽章 Middleware、端點
 src/Wallet.Core             模型、錯誤碼、介面、SignatureVerifier
 src/Wallet.Infrastructure   Dapper 實作、Migrator
 src/Wallet.Reconciliation   對帳服務與排程
-src/Provider.Simulator      遊戲商模擬器（Console）
-tests/                      Wallet.UnitTests、Wallet.IntegrationTests（Testcontainers）
+src/Provider.Simulator      遊戲商模擬器（Console，打錢包）
+src/Slot.Core               老虎機數學：連線、算分、轉輪、RNG、RTP 計算
+src/Slot.RtpSimulator       RTP 模擬器與調參器
+src/Slot.GameServer         遊戲伺服器（開局、spin、補派彩 Worker、報表）
+tests/                      Wallet.UnitTests、Wallet.IntegrationTests、Slot.Tests、Slot.GameServer.Tests（Testcontainers）
 load-tests/                 k6 腳本與實測輸出（results/）
-db/migrations/              SQL migration（嵌入組件，啟動時自動套用）
+db/migrations/              錢包的 SQL migration（嵌入組件，啟動時自動套用）
+db/slot/                    遊戲伺服器的 migration（slot schema）
 scripts/                    run-k6.sh、fault-test.sh
-docs/                       api.md、architecture.md、results.md、plans/（執行計畫）
+docs/                       api.md、architecture.md、results.md、slot-math.md、slot-server.md、plans/（執行計畫）
 ```
 
 ## 履歷條目（實測值）

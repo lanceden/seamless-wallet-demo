@@ -39,5 +39,28 @@ services:
       - ./reports:/app/reports   # 遊戲商報表放這裡，對帳排程／API 從這讀
     restart: unless-stopped
 
+  slot-gameserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.slot
+    container_name: slot-gameserver
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+    environment:
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=wallet;Username=wallet;Password=wallet;Maximum Pool Size=100"
+      Wallet__BaseUrl: "http://wallet-api:8080"
+      Wallet__ProviderCode: "SLOT"
+      Wallet__Secret: "slot-secret"          # demo 用，與錢包 migration 004 種的 SLOT 遊戲商一致
+      Game__ClientUrl: "http://localhost:8082/"   # 遊戲前端（H5）的網址；開局回傳 gameUrl 會接上 ?token=...
+      Report__Directory: "/app/reports"
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./reports:/app/reports   # 遊戲商報表放這裡，錢包的對帳從這讀
+    restart: unless-stopped
+
 volumes:
   pgdata:

@@ -1,0 +1,13 @@
+== slot fault test: players=10 run_for=75s wallet down 40s ==
+[15:24:40] docker stop wallet-api
+[15:25:22] wallet-api restarted
+spin responses (client view):
+   1457 OK
+     20 WALLET_UNAVAILABLE
+waiting for the recovery worker (stale BETTING rounds are rolled back after 60s, SETTLING rounds settled after 30s)...
+rounds by status (after 1s):
+COMPLETED|1457
+ROLLED_BACK|20
+players whose wallet balance differs from (initial - completed rounds net): 0
+wallet invariants: {"ok":true,"violations":[]}
+RESULT: PASS

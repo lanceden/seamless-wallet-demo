@@ -73,7 +73,8 @@
       <p class="balance" id="balance">—<small id="balanceFen"></small></p>
       <label for="depositYuan">加值（元，測試用）</label>
       <div class="row"><input id="depositYuan" type="number" min="1" value="1000"><button id="btnDeposit" style="flex:0 0 auto">加值</button></div>
-      <p class="hint">金額在資料庫一律是 bigint「分」，畫面以元顯示。</p>
+      <div class="btns"><button id="btnLaunch">開始遊戲（SLOT 老虎機）</button></div>
+      <p class="hint">金額在資料庫一律是 bigint「分」，畫面以元顯示。「開始遊戲」由錢包（平台）簽章呼叫遊戲商開局。</p>
     </section>
 
     <section class="card">
@@ -238,6 +239,20 @@ $('btnCreate').onclick = async () => {
   const r = await admin('POST', '/admin/players', { externalId: player() });
   summary(r.status === 201 ? `已建立玩家 ${player()}，餘額 0。接著加值。` : r.status === 409 ? '玩家已存在，沿用它。' : `建立失敗（HTTP ${r.status}）`, r.status >= 400 && r.status !== 409 ? 'bad' : 'ok');
   localStorage.setItem('demoPlayer', player()); refresh();
+};
+
+$('btnLaunch').onclick = async () => {
+  if (!needPlayer()) return;
+  const r = await admin('POST', `/admin/players/${encodeURIComponent(player())}/launch?provider=SLOT`);
+  const el = $('summary');
+  if (r.status !== 200 || !r.json?.gameUrl) {
+    summary(`開局失敗（HTTP ${r.status}）：${r.json?.error ?? '遊戲商沒有回應？'}`, 'bad');
+    return;
+  }
+  summary('已開局，token 有效 2 小時。', 'ok');
+  const a = document.createElement('a');
+  a.href = r.json.gameUrl; a.target = '_blank'; a.textContent = ' 開啟遊戲 →';
+  el.appendChild(a);
 };
 
 $('btnDeposit').onclick = async () => {
