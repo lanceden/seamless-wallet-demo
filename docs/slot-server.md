@@ -115,7 +115,8 @@ Wallet API（平台）                         Slot.GameServer（遊戲商）   
 
 ## 10. 前端串接驗證（Cocos 前端 `SeamlessWalletClient`）
 
-前端專案在 repo 外（`Z:epo\SeamlessWalletClient`，Cocos Creator 3.8.8），網路層 `Protocol.ts` / `NetService.ts` 已照本文件的 API 合約實作。用內建瀏覽器開編輯器的預覽（`http://localhost:7456/?token=…&api=http://localhost:8081`，token 由錢包 `POST /admin/players/{id}/launch?provider=SLOT` 取得），對**真實的**錢包 + 遊戲伺服器 + PostgreSQL 逐項操作：
+前端專案在 repo 外（`Z:
+epo\SeamlessWalletClient`，Cocos Creator 3.8.8），網路層 `Protocol.ts` / `NetService.ts` 已照本文件的 API 合約實作。用內建瀏覽器開編輯器的預覽（`http://localhost:7456/?token=…&api=http://localhost:8081`，token 由錢包 `POST /admin/players/{id}/launch?provider=SLOT` 取得），對**真實的**錢包 + 遊戲伺服器 + PostgreSQL 逐項操作：
 
 | 情境 | 結果 |
 |---|---|
@@ -131,11 +132,13 @@ Wallet API（平台）                         Slot.GameServer（遊戲商）   
 1. 遊戲中 token 過期（`TOKEN_INVALID`）時，畫面餘額停在「預扣下注額」之後的錯誤數字（錢包其實沒扣款）→ 改為還原預扣。
 2. 切回前景時重新取餘額發現 token 已過期，只會靜默地把 `tokenDead` 設成 true，之後按 SPIN 完全沒有反應 → 改為按下時顯示過期提示。
 
-**尚未驗證**：`settlePending` 的畫面提示（伺服器端由整合測試以故障注入覆蓋）、大獎特效 / 自動轉在真實伺服器下的表現、實機 FPS 與 H5 包體大小、Android 打包與熱更新、SignalR。
+**H5 構建（`client/web-mobile`，經 nginx :8082）**：從錢包 Demo 頁「開始遊戲」取得 `gameUrl`（已是 `localhost:8082`），開啟後實際玩一局：贏 4,300 分、餘額 303,300 分，與 `slot.rounds` 和錢包一致，不變式成立。包體原始 7.6 MB、gzip 約 2.7 MB（< 5 MB）。
+
+**尚未驗證**：`settlePending` 的畫面提示（伺服器端由整合測試以故障注入覆蓋）、大獎特效 / 自動轉在真實伺服器下的表現、實機 FPS、Android 打包與熱更新、SignalR。
 
 ## 11. 已知限制
 
 - `/provider/launch` 之外的 `/game/*` 只靠 token；`last-round` 的 token 放在 URL 查詢字串（SLOT_PLAN 的設計），可能出現在存取記錄；`/admin/report` 無驗證（demo）。
 - 錢包的每日對帳排程會對所有 ACTIVE 遊戲商執行，`SLOT` 若當天沒有匯出報表，會記一筆 `FAILED`；目前報表要手動呼叫 `/admin/report/{date}`，尚未排程自動匯出（後續）。
 - 同一玩家的鎖是 PostgreSQL session lock：持有期間佔用一條資料庫連線（連線池要夠大）。
-- `Game:ClientUrl` 在 compose 設為 `http://localhost:8082/`（預定的 H5 部署位置），目前尚未部署；開發時把 `gameUrl` 的 host:port 換成編輯器預覽的 `localhost:7456`。
+- H5 前端由 compose 的 `slot-client`（nginx，port 8082）提供，內容是**提交進 repo 的構建產物**（`client/web-mobile/`，見 `client/README.md`）；前端原始碼在 repo 外，修改後要重新構建並覆蓋。`gameUrl` 預設指向 `http://localhost:8082/`，開發時也可以改用編輯器預覽（`localhost:7456`）。

@@ -140,11 +140,11 @@ scripts/fault-test.sh kill-api                # 故障測試：docker kill API�
 
 - **Slot.Core / Slot.RtpSimulator**：連線算分、WILD、伺服器端 RNG；完整列舉 + 蒙地卡羅算 RTP，並有調參器。正式設定 **RTP 95.995%**（1,000 萬局模擬 95.981%）。見 [`docs/slot-math.md`](docs/slot-math.md)。
 - **Slot.GameServer**：`/provider/launch`、`/game/init`、`/game/spin`、`/game/last-round`；結果完全由伺服器決定，錢包 bet / settle / rollback 全部冪等，**補派彩 Worker 保證玩家贏的錢不會因為網路問題消失**。見 [`docs/slot-server.md`](docs/slot-server.md)。
-- 從 Demo 頁（`/`）按「開始遊戲」，錢包（平台）會簽章呼叫遊戲商開局並拿回 `gameUrl` + token。
+- 從 Demo 頁（`/`）按「開始遊戲」，錢包（平台）會簽章呼叫遊戲商開局並拿回 `gameUrl` + token，點開就是 H5 版老虎機（compose 的 `slot-client`，:8082；Cocos 前端的構建產物在 `client/web-mobile/`，見 [`client/README.md`](client/README.md)）。
 - **實測**：1 萬局 `slot.rounds` 與錢包 ledger 逐項相同（總下注、總贏分、筆數）；spin P95 46.7 ms；錢包停機 40 秒的故障測試，0 局卡住、餘額零誤差。
 
 ```bash
-docker compose up -d --build                                   # 錢包 :8080、遊戲伺服器 :8081
+docker compose up -d --build                                   # 錢包 :8080、遊戲伺服器 :8081、H5 遊戲 :8082
 dotnet run --project src/Slot.RtpSimulator -c Release -- --spins 10000000    # RTP 報表
 scripts/run-k6.sh 04-slot-spins                                # 1 萬局；結束後 scripts/verify-slot-run.sh <RUN_ID> 對 ledger
 scripts/slot-fault-test.sh                                     # 連轉中把錢包停機再恢復
@@ -161,6 +161,7 @@ src/Provider.Simulator      遊戲商模擬器（Console，打錢包）
 src/Slot.Core               老虎機數學：連線、算分、轉輪、RNG、RTP 計算
 src/Slot.RtpSimulator       RTP 模擬器與調參器
 src/Slot.GameServer         遊戲伺服器（開局、spin、補派彩 Worker、報表）
+client/                     H5 遊戲前端的構建產物（Cocos Creator，nginx 提供）
 tests/                      Wallet.UnitTests、Wallet.IntegrationTests、Slot.Tests、Slot.GameServer.Tests（Testcontainers）
 load-tests/                 k6 腳本與實測輸出（results/）
 db/migrations/              錢包的 SQL migration（嵌入組件，啟動時自動套用）
