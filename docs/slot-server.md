@@ -113,9 +113,29 @@ Wallet API（平台）                         Slot.GameServer（遊戲商）   
 
 > 停機測試中，單局內的重試（3 次 × 最長 5 秒逾時）本身就救回了大部分請求，只有停機超過這個視窗的才走到倒退 / Worker。SETTLING 的補派彩路徑（停機剛好發生在 bet 成功與 settle 之間）難以用真實停機穩定重現，由整合測試以故障注入覆蓋。
 
-## 10. 已知限制
+## 10. 前端串接驗證（Cocos 前端 `SeamlessWalletClient`）
+
+前端專案在 repo 外（`Z:epo\SeamlessWalletClient`，Cocos Creator 3.8.8），網路層 `Protocol.ts` / `NetService.ts` 已照本文件的 API 合約實作。用內建瀏覽器開編輯器的預覽（`http://localhost:7456/?token=…&api=http://localhost:8081`，token 由錢包 `POST /admin/players/{id}/launch?provider=SLOT` 取得），對**真實的**錢包 + 遊戲伺服器 + PostgreSQL 逐項操作：
+
+| 情境 | 結果 |
+|---|---|
+| 開局 → init → spin | 畫面餘額 = 錢包餘額；畫面盤面逐格 = `slot.rounds.reels`；贏分、連線線條與伺服器一致 |
+| 餘額不足（玩家 5 元、總下注 10 元） | 前端提示「餘額不足」，不送出，伺服器沒有建立任何回合 |
+| token 過期（載入時 / 遊戲中途） | 提示「遊戲連線已過期，請回到平台重新進入遊戲」，伺服器沒有建立回合（遊戲中途過期時發現並修正了兩個前端問題，見下） |
+| 請求沒送到伺服器（凍結 `slot-gameserver` 後按 SPIN） | 逾時後顯示「連線中…」，不重送；恢復後以 `last-round` 判定「本局未成立」，還原餘額，伺服器沒有新回合 |
+| 請求已到伺服器但回應來不及（凍結 `wallet-api` 15 秒，超過前端 10 秒逾時） | 顯示「連線中…」→ 伺服器恢復後輪詢 `last-round` 取回這一局並補演出（贏分 20.00、餘額 5,019.00 = 錢包 501,900 分）；只有一局、無重複下注，錢包不變式成立 |
+
+預覽效能面板：約 60 FPS、25～29 draw calls（SLOT_PLAN 要求 < 30；注意預覽窗格在背景時會降速，FPS 只在畫面可見時有意義）。
+
+驗證中發現並修正的兩個前端問題（`assets/scripts/slot/SlotGame.ts`）：
+1. 遊戲中 token 過期（`TOKEN_INVALID`）時，畫面餘額停在「預扣下注額」之後的錯誤數字（錢包其實沒扣款）→ 改為還原預扣。
+2. 切回前景時重新取餘額發現 token 已過期，只會靜默地把 `tokenDead` 設成 true，之後按 SPIN 完全沒有反應 → 改為按下時顯示過期提示。
+
+**尚未驗證**：`settlePending` 的畫面提示（伺服器端由整合測試以故障注入覆蓋）、大獎特效 / 自動轉在真實伺服器下的表現、實機 FPS 與 H5 包體大小、Android 打包與熱更新、SignalR。
+
+## 11. 已知限制
 
 - `/provider/launch` 之外的 `/game/*` 只靠 token；`last-round` 的 token 放在 URL 查詢字串（SLOT_PLAN 的設計），可能出現在存取記錄；`/admin/report` 無驗證（demo）。
 - 錢包的每日對帳排程會對所有 ACTIVE 遊戲商執行，`SLOT` 若當天沒有匯出報表，會記一筆 `FAILED`；目前報表要手動呼叫 `/admin/report/{date}`，尚未排程自動匯出（後續）。
 - 同一玩家的鎖是 PostgreSQL session lock：持有期間佔用一條資料庫連線（連線池要夠大）。
-- 遊戲前端（Cocos）尚未串接；`Game:ClientUrl` 目前只是指向預定位置。
+- `Game:ClientUrl` 在 compose 設為 `http://localhost:8082/`（預定的 H5 部署位置），目前尚未部署；開發時把 `gameUrl` 的 host:port 換成編輯器預覽的 `localhost:7456`。
