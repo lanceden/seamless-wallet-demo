@@ -1,0 +1,13 @@
+simulator → http://localhost:8080  players=1000 rounds=50000 concurrency=64 dup=0.05 ooo=0.02 rollback=0.03 inject=0
+done in 83.7s  requests=105530  retries=0  tps=1260
+  BET:BET_ALREADY_CANCELLED                500
+  BET:OK                                   49500
+  ROLLBACK:OK                              2000
+  SETTLE:BET_NOT_FOUND                     499
+  SETTLE:OK                                48000
+reply mismatches: 0   anomalies: 0
+report: reports\SIM50K_R2\provider-report-2026-11-18.csv
+player prefix: sim-1c1bc357-
+invariants: OK
+{'id': 3, 'bizDate': '2026-11-18', 'providerCode': 'SIM50K_R2', 'status': 'MATCHED', 'totalOurs': 61323400, 'totalTheirs': 61323400, 'diffCount': 0, 'invariantViolations': 0, 'message': None, 'createdAt': '2026-11-18T05:08:24.191995Z'}
+49500|48000|2000|500
