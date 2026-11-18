@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seamless Wallet Demo</title>
+<style>
+  :root {
+    --bg:#f6f7f9; --card:#fff; --ink:#1a1d23; --muted:#667085; --line:#e4e7ec;
+    --accent:#2563eb; --ok:#15803d; --warn:#b45309; --bad:#b91c1c; --okbg:#dcfce7; --warnbg:#fef3c7; --badbg:#fee2e2; --mono:ui-monospace,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0e1116; --card:#171b22; --ink:#e6e8ec; --muted:#9aa3b2; --line:#2a303a; --accent:#6ea0ff;
+            --ok:#4ade80; --warn:#fbbf24; --bad:#f87171; --okbg:#10321f; --warnbg:#3a2c0b; --badbg:#3b1717; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 system-ui,"Noto Sans TC","Microsoft JhengHei",sans-serif; }
+  header { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); background:var(--card); flex-wrap:wrap; }
+  header h1 { font-size:17px; margin:0; }
+  header .sp { flex:1; }
+  a { color:var(--accent); }
+  .badge { padding:2px 10px; border-radius:99px; font-size:12px; font-weight:600; background:var(--line); color:var(--muted); }
+  .badge.ok { background:var(--okbg); color:var(--ok); } .badge.bad { background:var(--badbg); color:var(--bad); }
+  main { display:grid; grid-template-columns:minmax(280px,340px) minmax(0,1fr); gap:16px; padding:16px 20px; max-width:1500px; margin:0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns:1fr; padding:12px 16px; } }
+  .col { display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .card h2 { font-size:13px; margin:0 0 10px; color:var(--muted); letter-spacing:.04em; }
+  label { display:block; font-size:12px; color:var(--muted); margin:8px 0 3px; }
+  input { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:7px; background:var(--bg); color:var(--ink); font:inherit; }
+  .row { display:flex; gap:8px; } .row > * { flex:1; min-width:0; }
+  button { padding:7px 12px; border:1px solid var(--line); border-radius:7px; background:var(--card); color:var(--ink); font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--accent); } button:disabled { opacity:.45; cursor:not-allowed; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .balance { font-size:34px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .balance small { font-size:13px; font-weight:400; color:var(--muted); margin-left:6px; }
+  .hint { color:var(--muted); font-size:12px; margin:6px 0 0; }
+  .sec { margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); }
+  .sec:first-of-type { margin-top:0; padding-top:0; border:0; }
+  .sec h3 { font-size:12px; margin:0 0 6px; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; } td.num { text-align:right; font-variant-numeric:tabular-nums; font-family:var(--mono); }
+  td.mono { font-family:var(--mono); }
+  .scroll { overflow-x:auto; }
+  .tag { padding:1px 7px; border-radius:5px; font-size:11.5px; font-weight:600; background:var(--line); }
+  .tag.ok { background:var(--okbg); color:var(--ok); } .tag.warn { background:var(--warnbg); color:var(--warn); } .tag.bad { background:var(--badbg); color:var(--bad); }
+  #summary { padding:10px 12px; border-radius:8px; background:var(--okbg); color:var(--ok); margin-bottom:12px; display:none; white-space:pre-wrap; }
+  #summary.warn { background:var(--warnbg); color:var(--warn); } #summary.bad { background:var(--badbg); color:var(--bad); }
+  .log { max-height:340px; overflow:auto; font-size:12.5px; }
+  .log details { border-bottom:1px solid var(--line); padding:5px 0; }
+  .log summary { cursor:pointer; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .log pre { margin:6px 0 2px; padding:8px; background:var(--bg); border-radius:6px; overflow:auto; font:12px/1.45 var(--mono); }
+  .t { color:var(--muted); font-family:var(--mono); font-size:11.5px; }
+  .tabs { display:flex; gap:4px; margin-bottom:8px; } .tabs button { border-radius:7px 7px 0 0; } .tabs button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Seamless Wallet Demo</h1>
+  <span class="badge" id="inv">帳務不變式：檢查中…</span>
+  <span class="sp"></span>
+  <a href="/swagger" target="_blank">Swagger</a>
+</header>
+
+<main>
+  <div class="col">
+    <section class="card">
+      <h2>玩家與錢包</h2>
+      <label for="player">玩家 ID（external id）</label>
+      <div class="row"><input id="player"><button id="btnCreate" class="primary" style="flex:0 0 auto">建立</button></div>
+      <p class="balance" id="balance">—<small id="balanceFen"></small></p>
+      <label for="depositYuan">加值（元，測試用）</label>
+      <div class="row"><input id="depositYuan" type="number" min="1" value="1000"><button id="btnDeposit" style="flex:0 0 auto">加值</button></div>
+      <p class="hint">金額在資料庫一律是 bigint「分」，畫面以元顯示。</p>
+    </section>
+
+    <section class="card">
+      <h2>遊戲商（簽章用）</h2>
+      <div class="row"><div><label for="pcode">Provider Code</label><input id="pcode" value="DEMO"></div><div><label for="psecret">Secret</label><input id="psecret" value="demo-secret"></div></div>
+      <p class="hint">請求由瀏覽器用 WebCrypto 計算 <code>HMAC-SHA256(secret, timestamp + "." + body)</code> 簽章，和真實遊戲商的呼叫方式相同。Secret 寫在頁面上僅限 demo。</p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="card">
+      <h2>遊戲商操作</h2>
+      <div id="summary"></div>
+
+      <div class="sec">
+        <h3>一個回合</h3>
+        <div class="row">
+          <div><label for="betYuan">下注（元）</label><input id="betYuan" type="number" min="1" value="50"></div>
+          <div><label for="payoutYuan">派彩（元，可為 0）</label><input id="payoutYuan" type="number" min="0" value="120"></div>
+        </div>
+        <div class="btns">
+          <button id="btnBet" class="primary">① 下注</button>
+          <button id="btnSettle">② 派彩</button>
+          <button id="btnRollback">取消（rollback）</button>
+          <button id="btnResend">重送上一個請求（同 txnId）</button>
+        </div>
+        <p class="hint" id="roundInfo">尚無回合。</p>
+      </div>
+
+      <div class="sec">
+        <h3>亂序</h3>
+        <div class="btns">
+          <button id="btnOoo1">先取消、再下注</button>
+          <button id="btnOoo2">先派彩、再下注、再重送派彩</button>
+        </div>
+        <p class="hint">取消先到 → 寫墓碑，之後的下注被擋；派彩先到 → BET_NOT_FOUND 且不留帳變，下注後同一 txnId 重送就成功。</p>
+      </div>
+
+      <div class="sec">
+        <h3>併發</h3>
+        <div class="row">
+          <div><label for="raceN">併發下注筆數</label><input id="raceN" type="number" min="2" max="500" value="60"></div>
+          <div><label for="raceYuan">每筆（元）</label><input id="raceYuan" type="number" min="1" value="100"></div>
+        </div>
+        <div class="btns">
+          <button id="btnRace">同一錢包併發下注（試超扣）</button>
+          <button id="btnStorm">同一個 txnId 併發 30 次</button>
+        </div>
+        <p class="hint">併發下注：餘額能付幾筆就只會成功幾筆，永遠不會變負。重複風暴：30 個請求只扣一次、回應全部一致。</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="tabs"><button data-tab="tx" class="on">帳變紀錄</button><button data-tab="bets">注單</button><button data-tab="log">請求 / 回應</button></div>
+      <div id="tab-tx" class="scroll"></div>
+      <div id="tab-bets" class="scroll" hidden></div>
+      <div id="tab-log" class="log" hidden></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const enc = new TextEncoder();
+const rand = () => Math.random().toString(36).slice(2, 10);
+const yuan = (fen) => (fen / 100).toLocaleString('zh-TW', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const toFen = (id) => Math.round(parseFloat($(id).value) * 100);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const state = { last: null, round: null, logs: [] };
+const player = () => $('player').value.trim();
+
+// ---------------- 簽章與呼叫 ----------------
+async function hmacHex(secret, message) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function wallet(endpoint, payload, { quiet = false } = {}) {
+  const body = JSON.stringify(payload);
+  const ts = Math.floor(Date.now() / 1000).toString();
+  const t0 = performance.now();
+  const res = await fetch('/api/v1/wallet/' + endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Provider-Code': $('pcode').value, 'X-Timestamp': ts,
+               'X-Signature': await hmacHex($('psecret').value, ts + '.' + body) },
+    body,
+  });
+  const raw = await res.text();
+  let json = null; try { json = JSON.parse(raw); } catch {}
+  const out = { endpoint, payload, status: res.status, raw, json, ms: Math.round(performance.now() - t0) };
+  if (!quiet) addLog(out);
+  return out;
+}
+
+async function admin(method, path, payload) {
+  const res = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: payload ? JSON.stringify(payload) : undefined });
+  const text = await res.text();
+  return { status: res.status, json: text ? JSON.parse(text) : null };
+}
+
+// ---------------- 畫面 ----------------
+function codeTag(code, status) {
+  if (status && status !== 200) return `<span class="tag bad">HTTP ${status}</span>`;
+  const cls = code === 'OK' ? 'ok' : (code === 'INSUFFICIENT_BALANCE' || code?.startsWith('BET_') || code === 'DUPLICATE_ROUND' || code === 'TXN_CONFLICT') ? 'warn' : 'bad';
+  return `<span class="tag ${cls}">${esc(code)}</span>`;
+}
+
+function addLog(r) {
+  state.logs.unshift(r);
+  if (state.logs.length > 60) state.logs.pop();
+  renderLog();
+}
+
+function renderLog() {
+  $('tab-log').innerHTML = state.logs.map((r) => `
+    <details><summary><span class="t">${r.ms} ms</span><b>${esc(r.endpoint)}</b>${codeTag(r.json?.code, r.status)}
+      <span class="t">${esc(r.payload.txnId ?? '')}</span>${r.json?.balance != null ? `<span class="t">餘額 ${yuan(r.json.balance)}</span>` : ''}</summary>
+      <pre>${esc(JSON.stringify(r.payload))}\n→ HTTP ${r.status}\n${esc(r.raw)}</pre></details>`).join('') || '<p class="hint">尚無請求。</p>';
+}
+
+function summary(text, kind = 'ok') {
+  const el = $('summary');
+  el.textContent = text; el.className = kind === 'ok' ? '' : kind; el.style.display = 'block';
+}
+
+async function refresh() {
+  try {
+    const inv = await admin('GET', '/admin/health/invariants');
+    const b = $('inv');
+    b.textContent = inv.json?.ok ? '帳務不變式：✓ 成立' : `帳務不變式：✗ 違反 ${inv.json?.violations?.length ?? '?'} 位玩家`;
+    b.className = 'badge ' + (inv.json?.ok ? 'ok' : 'bad');
+  } catch {}
+  const p = player();
+  if (!p) return;
+  const bal = await wallet('balance', { playerId: p }, { quiet: true });
+  if (bal.json?.code === 'OK') { $('balance').firstChild.nodeValue = '$' + yuan(bal.json.balance); $('balanceFen').textContent = bal.json.balance.toLocaleString() + ' 分'; }
+  else { $('balance').firstChild.nodeValue = '—'; $('balanceFen').textContent = bal.json?.code ?? ''; }
+
+  const tx = await admin('GET', `/admin/players/${encodeURIComponent(p)}/transactions?pageSize=25`);
+  $('tab-tx').innerHTML = tx.json ? `<table><tr><th>#</th><th>類型</th><th>txnId</th><th>金額（分）</th><th>前</th><th>後</th><th>狀態</th></tr>` +
+    tx.json.items.map((t) => `<tr><td class="num">${t.id}</td><td>${esc(t.type)}</td><td class="mono">${esc(t.txnId)}</td>
+      <td class="num" style="color:${t.amount < 0 ? 'var(--bad)' : 'var(--ok)'}">${t.amount.toLocaleString()}</td>
+      <td class="num">${t.balanceBefore.toLocaleString()}</td><td class="num">${t.balanceAfter.toLocaleString()}</td>
+      <td>${t.status === 'SUCCESS' ? '<span class="tag ok">SUCCESS</span>' : `<span class="tag warn">${esc(t.errorCode)}</span>`}</td></tr>`).join('') + '</table>' : '<p class="hint">玩家不存在，請先建立。</p>';
+
+  const bets = await admin('GET', `/admin/bets?playerId=${encodeURIComponent(p)}&pageSize=15`);
+  $('tab-bets').innerHTML = bets.json ? `<table><tr><th>round</th><th>下注（分）</th><th>派彩（分）</th><th>狀態</th><th>bet txn</th></tr>` +
+    bets.json.items.map((b) => `<tr><td class="mono">${esc(b.roundId)}</td><td class="num">${b.betAmount.toLocaleString()}</td>
+      <td class="num">${b.payoutAmount == null ? '—' : b.payoutAmount.toLocaleString()}</td>
+      <td><span class="tag ${b.status === 'SETTLED' ? 'ok' : b.status === 'CANCELLED' ? 'warn' : ''}">${esc(b.status)}</span></td><td class="mono">${esc(b.betTxnId)}</td></tr>`).join('') + '</table>' : '';
+}
+
+function needPlayer() { if (!player()) { summary('請先輸入並建立玩家。', 'warn'); return false; } return true; }
+function needRound() { if (!state.round) { summary('請先按「① 下注」開一個回合。', 'warn'); return false; } return true; }
+function setRound(r) { state.round = r; $('roundInfo').textContent = `目前回合：round ${r.roundId}｜下注 txn ${r.betTxn}｜${yuan(r.amount)} 元`; }
+const ids = () => ({ betTxn: 'T-' + rand(), roundId: 'R-' + rand() });
+
+// ---------------- 動作 ----------------
+$('btnCreate').onclick = async () => {
+  const r = await admin('POST', '/admin/players', { externalId: player() });
+  summary(r.status === 201 ? `已建立玩家 ${player()}，餘額 0。接著加值。` : r.status === 409 ? '玩家已存在，沿用它。' : `建立失敗（HTTP ${r.status}）`, r.status >= 400 && r.status !== 409 ? 'bad' : 'ok');
+  localStorage.setItem('demoPlayer', player()); refresh();
+};
+
+$('btnDeposit').onclick = async () => {
+  if (!needPlayer()) return;
+  const r = await admin('POST', `/admin/players/${encodeURIComponent(player())}/deposit`, { amount: toFen('depositYuan') });
+  summary(r.status === 200 ? `加值 ${$('depositYuan').value} 元，餘額 ${yuan(r.json.balance)}` : `加值失敗（HTTP ${r.status}），玩家存在嗎？`, r.status === 200 ? 'ok' : 'bad');
+  refresh();
+};
+
+$('btnBet').onclick = async () => {
+  if (!needPlayer()) return;
+  const { betTxn, roundId } = ids(); const amount = toFen('betYuan');
+  const payload = { playerId: player(), txnId: betTxn, roundId, gameCode: 'SLOT01', amount };
+  const r = await wallet('bet', payload);
+  state.last = { endpoint: 'bet', payload, raw: r.raw };
+  if (r.json?.code === 'OK') setRound({ roundId, betTxn, amount });
+  summary(`下注 ${$('betYuan').value} 元 → ${r.json?.code}`, r.json?.code === 'OK' ? 'ok' : 'warn'); refresh();
+};
+
+$('btnSettle').onclick = async () => {
+  if (!needPlayer() || !needRound()) return;
+  const payload = { playerId: player(), txnId: 'S-' + rand(), roundId: state.round.roundId, amount: toFen('payoutYuan') };
+  const r = await wallet('settle', payload);
+  state.last = { endpoint: 'settle', payload, raw: r.raw };
+  summary(`派彩 ${$('payoutYuan').value} 元 → ${r.json?.code}`, r.json?.code === 'OK' ? 'ok' : 'warn'); refresh();
+};
+
+$('btnRollback').onclick = async () => {
+  if (!needPlayer() || !needRound()) return;
+  const payload = { playerId: player(), txnId: 'X-' + rand(), refTxnId: state.round.betTxn };
+  const r = await wallet('rollback', payload);
+  state.last = { endpoint: 'rollback', payload, raw: r.raw };
+  summary(`取消 → ${r.json?.code}（已派彩的注單會回 BET_ALREADY_SETTLED）`, r.json?.code === 'OK' ? 'ok' : 'warn'); refresh();
+};
+
+$('btnResend').onclick = async () => {
+  if (!state.last) { summary('還沒有可重送的請求。', 'warn'); return; }
+  const before = (await wallet('balance', { playerId: player() }, { quiet: true })).json?.balance;
+  const r = await wallet(state.last.endpoint, state.last.payload);
+  const after = (await wallet('balance', { playerId: player() }, { quiet: true })).json?.balance;
+  const same = r.raw === state.last.raw;
+  summary(`以同一個 txnId（${state.last.payload.txnId}）重送：\n回應與第一次${same ? '逐字相同 ✓' : '不同（未留帳變的結果每次重新判斷，timestamp 會變）'}｜餘額 ${yuan(before)} → ${yuan(after)}（${before === after ? '沒有重複異動 ✓' : '有變動 ✗'}）`, same && before === after ? 'ok' : 'warn');
+  refresh();
+};
+
+$('btnOoo1').onclick = async () => {
+  if (!needPlayer()) return;
+  const { betTxn, roundId } = ids(); const amount = toFen('betYuan');
+  const rb = await wallet('rollback', { playerId: player(), txnId: 'X-' + rand(), refTxnId: betTxn });
+  const bet = await wallet('bet', { playerId: player(), txnId: betTxn, roundId, gameCode: 'SLOT01', amount });
+  summary(`先取消 → ${rb.json?.code}（寫入墓碑）\n再下注 → ${bet.json?.code}（餘額沒有被扣）`, bet.json?.code === 'BET_ALREADY_CANCELLED' ? 'ok' : 'bad'); refresh();
+};
+
+$('btnOoo2').onclick = async () => {
+  if (!needPlayer()) return;
+  const { betTxn, roundId } = ids(); const amount = toFen('betYuan');
+  const settle = { playerId: player(), txnId: 'S-' + rand(), roundId, amount: toFen('payoutYuan') };
+  const s1 = await wallet('settle', settle);
+  const bet = await wallet('bet', { playerId: player(), txnId: betTxn, roundId, gameCode: 'SLOT01', amount });
+  const s2 = await wallet('settle', settle);
+  summary(`先派彩 → ${s1.json?.code}（不留帳變，等遊戲商重送）\n下注 → ${bet.json?.code}\n同一 txnId 重送派彩 → ${s2.json?.code}`, s2.json?.code === 'OK' ? 'ok' : 'bad'); refresh();
+};
+
+$('btnRace').onclick = async () => {
+  if (!needPlayer()) return;
+  const n = parseInt($('raceN').value), amount = toFen('raceYuan');
+  const before = (await wallet('balance', { playerId: player() }, { quiet: true })).json?.balance;
+  const rs = await Promise.all(Array.from({ length: n }, () => { const { betTxn, roundId } = ids();
+    return wallet('bet', { playerId: player(), txnId: betTxn, roundId, gameCode: 'SLOT01', amount }, { quiet: true }); }));
+  const ok = rs.filter((r) => r.json?.code === 'OK').length, ins = rs.filter((r) => r.json?.code === 'INSUFFICIENT_BALANCE').length;
+  const after = (await wallet('balance', { playerId: player() }, { quiet: true })).json?.balance;
+  const expectOk = Math.min(n, Math.floor(before / amount));
+  summary(`${n} 筆併發下注（每筆 ${yuan(amount)} 元，起始餘額 ${yuan(before)} 元）\n成功 ${ok} 筆、餘額不足 ${ins} 筆（理論上最多 ${expectOk} 筆）\n餘額 ${yuan(before)} → ${yuan(after)}，${after >= 0 && ok === expectOk ? '零超扣 ✓' : '異常 ✗'}`,
+    after >= 0 && ok === expectOk ? 'ok' : 'bad');
+  addLog({ endpoint: 'bet ×' + n, payload: { note: '併發下注' }, status: 200, raw: JSON.stringify({ ok, insufficient: ins }), json: { code: 'OK' }, ms: 0 });
+  refresh();
+};
+
+$('btnStorm').onclick = async () => {
+  if (!needPlayer()) return;
+  const { betTxn, roundId } = ids(); const amount = toFen('betYuan');
+  const before = (await wallet('balance', { playerId: player() }, { quiet: true })).json?.balance;
+  const payload = { playerId: player(), txnId: betTxn, roundId, gameCode: 'SLOT01', amount };
+  const rs = await Promise.all(Array.from({ length: 30 }, () => wallet('bet', payload, { quiet: true })));
+  const after = (await wallet('balance', { playerId: player() }, { quiet: true })).json?.balance;
+  const distinct = new Set(rs.map((r) => r.raw)).size;
+  const code = rs[0].json?.code;
+  const expected = code === 'OK' ? amount : 0; // 餘額不足時整批都回同一個 INSUFFICIENT_BALANCE，且一毛都不扣
+  const good = distinct === 1 && before - after === expected;
+  summary(`同一個 txnId（${betTxn}）併發 30 次 → 結果 ${code}
+不同的回應內容：${distinct} 種${distinct === 1 ? ' ✓ 全部一致' : ' ✗'}
+餘額 ${yuan(before)} → ${yuan(after)}，扣了 ${yuan(before - after)} 元（預期 ${yuan(expected)} 元）${before - after === expected ? ' ✓' : ' ✗'}`,
+    good ? 'ok' : 'bad');
+  addLog({ endpoint: 'bet ×30（同 txnId）', payload, status: 200, raw: rs[0].raw, json: rs[0].json, ms: 0 });
+  setRound({ roundId, betTxn, amount }); refresh();
+};
+
+document.querySelectorAll('.tabs button').forEach((b) => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach((x) => x.classList.toggle('on', x === b));
+  for (const t of ['tx', 'bets', 'log']) $('tab-' + t).hidden = t !== b.dataset.tab;
+});
+
+$('player').value = localStorage.getItem('demoPlayer') || 'demo-' + rand();
+$('player').addEventListener('change', () => { localStorage.setItem('demoPlayer', player()); state.round = null; refresh(); });
+renderLog(); refresh(); setInterval(refresh, 2500);
+</script>
+</body>
+</html>

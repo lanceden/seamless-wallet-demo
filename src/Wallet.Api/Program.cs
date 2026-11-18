@@ -26,6 +26,10 @@ app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
         ErrorCodes.InternalError, null, null, DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
 }));
 
+// Demo 頁面（wwwroot/index.html）：瀏覽器端用 WebCrypto 簽章，直接呼叫遊戲商端點
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
