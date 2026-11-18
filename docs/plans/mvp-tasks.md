@@ -4,7 +4,7 @@ Spec：`PLAN.md`（權威）。本檔只把 §11 里程碑切成可執行任務�
 
 ## Global Constraints
 
-- .NET：`net8.0`（SDK 10 可建置 net8.0；套件選 net8 相容版本）。
+- .NET：`net10.0`（使用者指示改用 .NET 10，覆寫 PLAN.md §2 的 .NET 8）。
 - 金額 bigint「分」，不用 float。帳務唯一事實來源 = PostgreSQL。
 - Compose 的 Postgres 對外埠用 `5433`（本機 5432 已被佔用）。Testcontainers 使用隨機埠。
 - k6 以 `docker run grafana/k6` 執行，不安裝。
