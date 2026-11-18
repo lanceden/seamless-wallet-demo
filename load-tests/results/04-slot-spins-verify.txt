@@ -1,0 +1,7 @@
+slot.rounds（status 分布）：
+COMPLETED|10000|45000000|45606400
+slot.rounds  COMPLETED   : 筆數|總下注|總贏分 = 10000|45000000|45606400
+wallet ledger SLOT      : BET 筆數|BET 總額|SETTLE 筆數|SETTLE 總額 = 10000|45000000|10000|45606400
+餘額與回合淨額不符的玩家數：0
+錢包不變式：{"ok":true,"violations":[]}
+RESULT: PASS（回合 10000 局；總下注 45000000、總贏分 45606400 與錢包 ledger 完全相同）

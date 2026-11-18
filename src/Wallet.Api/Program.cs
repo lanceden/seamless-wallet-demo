@@ -13,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddWalletInfrastructure(connStr);
 builder.Services.AddReconciliation(builder.Configuration);
+builder.Services.AddHttpClient("provider-launch", c => c.Timeout = TimeSpan.FromSeconds(5));
 
 var app = builder.Build();
 
@@ -41,6 +42,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapWalletEndpoints();
 app.MapAdminEndpoints();
 app.MapReconciliationEndpoints();
+app.MapLaunchEndpoints();
 
 app.Run();
 
