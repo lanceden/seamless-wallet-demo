@@ -158,7 +158,7 @@ public static class SimulatorRunner
             first = await client.SendAsync(path, payload, ct);
             dup = await client.SendAsync(path, payload, ct);
         }
-        if (first.Raw != dup.Raw)
+        if (!ReplyComparer.Equivalent(first, dup))
         {
             onMismatch();
             anomalies.Add($"{type} duplicate reply differs: {first.Raw} vs {dup.Raw}");

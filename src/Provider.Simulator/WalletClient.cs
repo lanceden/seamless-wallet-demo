@@ -5,7 +5,21 @@ using System.Text.Json;
 
 namespace Provider.Simulator;
 
-public sealed record Reply(string Code, long? Balance, long Timestamp, string Raw);
+public sealed record Reply(string Code, long? Balance, string? TxnId, long Timestamp, string Raw);
+
+public static class ReplyComparer
+{
+    /// <summary>
+    /// 同一個 txnId 重送時，兩次回應是否「等價」。有留帳變的結果（回應帶 txnId）必須逐欄相同，
+    /// 包含 timestamp（取自第一次帳變）。沒留帳變的結果（BET_NOT_FOUND、DUPLICATE_ROUND…）每次重新判斷，
+    /// timestamp 是當下時間，跨秒會不同，所以只比 code / balance。
+    /// </summary>
+    public static bool Equivalent(Reply a, Reply b)
+    {
+        if (a.Code != b.Code || a.Balance != b.Balance || a.TxnId != b.TxnId) return false;
+        return a.TxnId is null || a.Timestamp == b.Timestamp;
+    }
+}
 
 /// <summary>模擬遊戲商呼叫錢包 API：簽章、逾時、遇到 5xx / INTERNAL_ERROR / 連線錯誤時以同一個 payload（同 txnId）重送。</summary>
 public sealed class WalletClient(HttpClient http, SimulatorOptions o)
@@ -39,7 +53,8 @@ public sealed class WalletClient(HttpClient http, SimulatorOptions o)
                 var code = json.GetProperty("code").GetString()!;
                 if (code == "INTERNAL_ERROR") throw new HttpRequestException("INTERNAL_ERROR");
                 long? balance = json.TryGetProperty("balance", out var b) && b.ValueKind == JsonValueKind.Number ? b.GetInt64() : null;
-                return new Reply(code, balance, json.GetProperty("timestamp").GetInt64(), text);
+                var txnId = json.TryGetProperty("txnId", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() : null;
+                return new Reply(code, balance, txnId, json.GetProperty("timestamp").GetInt64(), text);
             }
             catch (Exception e) when (e is HttpRequestException or TaskCanceledException or OperationCanceledException or IOException
                                       && !ct.IsCancellationRequested)

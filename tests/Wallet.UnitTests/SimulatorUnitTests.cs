@@ -88,3 +88,24 @@ public class ReportErrorInjectorTests
         Assert.Equal(a, b);
     }
 }
+
+public class ReplyComparerTests
+{
+    private static Reply R(string code, long? bal, string? txn, long ts) => new(code, bal, txn, ts, "");
+
+    [Fact]
+    public void Recorded_replies_must_match_exactly_including_timestamp()
+    {
+        Assert.True(ReplyComparer.Equivalent(R("OK", 100, "T1", 5), R("OK", 100, "T1", 5)));
+        Assert.False(ReplyComparer.Equivalent(R("OK", 100, "T1", 5), R("OK", 100, "T1", 6)));
+        Assert.False(ReplyComparer.Equivalent(R("OK", 100, "T1", 5), R("OK", 90, "T1", 5)));
+        Assert.False(ReplyComparer.Equivalent(R("OK", 100, "T1", 5), R("INSUFFICIENT_BALANCE", 100, "T1", 5)));
+    }
+
+    [Fact]
+    public void Unrecorded_replies_have_no_ledger_row_so_their_timestamp_is_not_compared()
+    {
+        Assert.True(ReplyComparer.Equivalent(R("BET_NOT_FOUND", null, null, 5), R("BET_NOT_FOUND", null, null, 6)));
+        Assert.False(ReplyComparer.Equivalent(R("BET_NOT_FOUND", null, null, 5), R("OK", null, null, 5)));
+    }
+}
