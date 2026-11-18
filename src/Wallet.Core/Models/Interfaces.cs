@@ -8,6 +8,7 @@ public interface IProviderStore
 public interface IWalletService
 {
     Task<WalletResponse> GetBalanceAsync(int providerId, string playerId, CancellationToken ct = default);
+    Task<WalletResponse> BetAsync(int providerId, BetRequest req, CancellationToken ct = default);
 }
 
 public interface IAdminService

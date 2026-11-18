@@ -1,5 +1,6 @@
 using Wallet.Api.Endpoints;
 using Wallet.Api.Middleware;
+using Wallet.Core.Models;
 using Wallet.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,14 @@ builder.Services.AddWalletInfrastructure(connStr);
 var app = builder.Build();
 
 await Migrator.ApplyAsync(connStr);
+
+// 未預期例外（例如資料庫斷線）：回 500 + INTERNAL_ERROR，遊戲商應以同一個 txnId 重送
+app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
+{
+    ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+    await ctx.Response.WriteAsJsonAsync(new WalletResponse(
+        ErrorCodes.InternalError, null, null, DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
+}));
 
 app.UseSwagger();
 app.UseSwaggerUI();
