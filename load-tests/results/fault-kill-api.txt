@@ -1,0 +1,18 @@
+== fault test: kill-api  provider=FAULT_KILL_API_130830 rounds=60000 ==
+[13:08:38] injecting fault: kill-api
+[13:08:44] fault injected / service restarting
+simulator → http://localhost:8080  players=500 rounds=60000 concurrency=32 dup=0.05 ooo=0.02 rollback=0.03 inject=0
+done in 104.4s  requests=126826  retries=202  tps=1215
+  BET:BET_ALREADY_CANCELLED                601
+  BET:OK                                   59399
+  ROLLBACK:OK                              2401
+  SETTLE:BET_NOT_FOUND                     598
+  SETTLE:OK                                57599
+reply mismatches: 0   anomalies: 0
+report: reports\FAULT_KILL_API_130830\provider-report-2026-11-18.csv
+player prefix: sim-080816d3-
+invariants: OK
+simulator exit code: 0
+invariants: {"ok":true,"violations":[]}
+reconciliation 2026-11-18: "status":"MATCHED" "totalOurs":73556150 "totalTheirs":73556150 "diffCount":0 
+RESULT: PASS

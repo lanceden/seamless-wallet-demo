@@ -108,11 +108,11 @@ curl -s localhost:8080/api/v1/wallet/balance \
 | POST | `/admin/players` | `{externalId}` 建立玩家與餘額 0 的錢包；已存在回 409 |
 | POST | `/admin/players/{id}/deposit` | `{amount}` 測試用加值，寫一筆 `DEPOSIT` 帳變（掛在內部 `SYSTEM` 遊戲商底下）。`{id}` 為玩家的 `externalId` |
 | GET | `/admin/players/{id}/transactions?page=&pageSize=` | 帳變紀錄，新到舊，`pageSize` 上限 200 |
+| GET | `/admin/bets?playerId=&status=&from=&to=&page=&pageSize=` | 注單查詢。`status` 為 `PENDING`/`SETTLED`/`CANCELLED`；`from`（含）/`to`（不含）為 ISO-8601，以 UTC 比對 `created_at`；新到舊 |
 | GET | `/admin/health/invariants` | 執行帳務不變式：`200 {"ok":true,"violations":[]}`；有玩家餘額與帳變加總對不上時 `500 {"ok":false,"violations":[...]}` |
 | POST | `/admin/reconciliation/{yyyy-MM-dd}?provider=` | 手動觸發對帳（省略 `provider` = 所有 ACTIVE 遊戲商）。重跑同一天會覆蓋結果 |
 | GET | `/admin/reconciliation/{yyyy-MM-dd}` | 該日對帳結果與差異；沒對過回 404 |
 
-> 沒有 `/admin/bets` 注單查詢端點（PLAN §6.4 列出）：MVP 以 `transactions` 與資料庫直接查詢取代，列為已知缺口。
 
 ## 6. 遊戲商報表（對帳用）
 

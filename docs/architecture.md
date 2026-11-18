@@ -122,7 +122,6 @@ rollback 取到 bet 之後，還會用 `SELECT … FOR UPDATE` 鎖住注單，�
 | 派彩與停權玩家 | 未指定 | 派彩照付（獎金是欠玩家的） | — |
 | `/balance` 的實作時點 | 週六（與 bet 同批） | 與簽章 Middleware 同批 | Middleware 需要一個簽章端點才能測試 |
 | `/admin/providers` | 未列 | 新增 | 壓測 / 故障測試每次用獨立遊戲商，避免報表互相覆蓋 |
-| `/admin/bets` | 有 | **未實作** | 見 `docs/api.md` |
 
 ## 7. 已知限制
 
