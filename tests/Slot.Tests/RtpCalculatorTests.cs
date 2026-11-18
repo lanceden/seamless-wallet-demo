@@ -79,4 +79,15 @@ public class RtpCalculatorTests
         var b = new SlotConfig([T.Strip("LEMON BAR 7 BAR"), T.Strip("LEMON WILD 7 BAR"), T.Strip("LEMON 7 BAR WILD"), T.Strip("LEMON CHERRY WILD 7"), T.Strip("LEMON LEMON 7 BAR")], T.Pay);
         Assert.Equal(RtpCalculator.Exact(a).Rtp, RtpCalculator.Exact(b).Rtp, 12);
     }
+
+    [Fact]
+    public void Production_config_meets_the_rtp_target_between_95_and_97_percent_by_full_enumeration()
+    {
+        var r = RtpCalculator.Exact(SlotConfig.Default);
+        Assert.InRange(r.Rtp, 0.95, 0.97);
+        Assert.Equal(RtpCalculator.Analytic(SlotConfig.Default), r.Rtp, 12);
+        Assert.InRange(r.HitRate, 0.2, 0.7);          // 沒有功能玩法時，返還全靠連線，中獎率偏高是預期；這裡只擋離譜的值
+        Assert.True(r.MaxWinMultiplier >= 20, "最大單局至少要能觸發大獎（≥20× 總下注）");
+        Assert.Equal(r.Rtp, r.Contributions.Values.Sum(), 9);
+    }
 }

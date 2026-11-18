@@ -19,14 +19,17 @@ public sealed class PayTable
 
     public IReadOnlyDictionary<Symbol, int[]> Entries => _source;
 
-    /// <summary>SLOT_PLAN §5.2 的示意賠率（之後會依 RTP 模擬結果調整）。</summary>
+    /// <summary>
+    /// 正式賠率（× 每線下注）。SLOT_PLAN §5.2 的示意賠率在這個轉輪帶設計下 RTP 只有約 35%，
+    /// 所以由 Slot.RtpSimulator 的調參器一併調整，結果與調整過程見 docs/slot-math.md。
+    /// </summary>
     public static PayTable Default { get; } = new(new Dictionary<Symbol, int[]>
     {
-        [Symbol.Seven]  = [20, 100, 500],
-        [Symbol.Bar]    = [10, 40, 150],
-        [Symbol.Bell]   = [6, 20, 80],
-        [Symbol.Melon]  = [4, 12, 40],
-        [Symbol.Cherry] = [2, 6, 20],
-        [Symbol.Lemon]  = [1, 4, 12],
+        [Symbol.Seven]  = [24, 132, 516],
+        [Symbol.Bar]    = [15, 40, 156],
+        [Symbol.Bell]   = [10, 40, 88],
+        [Symbol.Melon]  = [8, 18, 72],
+        [Symbol.Cherry] = [6, 15, 32],
+        [Symbol.Lemon]  = [3, 4, 13],
     });
 }
