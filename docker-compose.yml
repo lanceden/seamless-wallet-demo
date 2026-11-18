@@ -1,3 +1,5 @@
+name: seamless-wallet-demo   # 固定 compose 專案名稱，k6 腳本才找得到 seamless-wallet-demo_default 網路（與資料夾名稱無關）
+
 services:
   postgres:
     image: postgres:16-alpine

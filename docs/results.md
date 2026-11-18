@@ -13,6 +13,8 @@
 | 資料庫 | PostgreSQL 16.16（`postgres:16-alpine`），預設設定，只把 `max_connections` 調到 300；資料存在 named volume |
 | 負載產生器 | k6（`grafana/k6` 容器，加入 compose 網路，直接打 `http://wallet-api:8080`）；模擬器為本機 `dotnet run -c Release` |
 
+> **版本說明**：01、02 在最終審查修正後的版本重跑通過；03、5 萬回合、故障測試是在審查修正**之前**的版本（commit `2b3092b`）上量測。審查修正只動了重送路徑的一個 JOIN、回應 timestamp 的取整、請求驗證與 Content-Type 檢查，對上述數字的影響預期可忽略，但**沒有**重跑這幾項。
+>
 > **限制**：k6（或模擬器）、API、PostgreSQL **全部跑在同一台機器上**，彼此搶 CPU，所以這些是「單機、負載產生器同機」的數字，不是 API 的理論上限。
 
 ## 一、k6 壓測

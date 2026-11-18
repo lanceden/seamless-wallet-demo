@@ -26,7 +26,7 @@
 
   █ TOTAL RESULTS 
 
-    checks_total.......: 301     708.295043/s
+    checks_total.......: 301     858.632583/s
     checks_succeeded...: 100.00% 301 out of 301
     checks_failed......: 0.00%   0 out of 301
 
@@ -39,22 +39,22 @@
     ✓ accounting invariants hold
 
     HTTP
-    http_req_duration..............: avg=81.28ms  med=42.06ms  p(90)=182.86ms p(95)=192.68ms p(99)=201.83ms max=203.17ms
-      { expected_response:true }...: avg=81.28ms  med=42.06ms  p(90)=182.86ms p(95)=192.68ms p(99)=201.83ms max=203.17ms
+    http_req_duration..............: avg=90.32ms  med=38.8ms   p(90)=224.83ms p(95)=242.96ms p(99)=256.06ms max=261.95ms
+      { expected_response:true }...: avg=90.32ms  med=38.8ms   p(90)=224.83ms p(95)=242.96ms p(99)=256.06ms max=261.95ms
     http_req_failed................: 0.00% 0 out of 104
-    http_reqs......................: 104   244.726526/s
+    http_reqs......................: 104   296.670394/s
 
     EXECUTION
-    iteration_duration.............: avg=166.68ms med=160.23ms p(90)=199.37ms p(95)=204.38ms p(99)=208.61ms max=210.17ms
-    iterations.....................: 50    117.656984/s
+    iteration_duration.............: avg=188.21ms med=185.83ms p(90)=249.28ms p(95)=257.11ms p(99)=262.53ms max=265.28ms
+    iterations.....................: 50    142.629997/s
 
     NETWORK
-    data_received..................: 49 kB 116 kB/s
-    data_sent......................: 26 kB 62 kB/s
+    data_received..................: 49 kB 140 kB/s
+    data_sent......................: 26 kB 75 kB/s
 
 
 
 
 running (0m00.4s), 00/50 VUs, 50 complete and 0 interrupted iterations
-storm ✓ [ 100% ] 50 VUs  0m00.2s/1m0s  50/50 shared iters
+storm ✓ [ 100% ] 50 VUs  0m00.3s/1m0s  50/50 shared iters
 k6 exit code: 0

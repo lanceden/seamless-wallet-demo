@@ -32,7 +32,7 @@ public sealed partial class PgWalletService(NpgsqlDataSource ds) : IWalletServic
         await Ledger.LockTxnAsync(conn, tx, providerId, req.TxnId!);
 
         var existing = await Ledger.FindAsync(conn, tx, providerId, req.TxnId!);
-        if (existing is not null) return Ledger.Replay(existing, req.TxnId!);
+        if (existing is not null) return Ledger.ReplayOrConflict(existing, req.TxnId!, "BET", req.PlayerId!);
 
         var player = await conn.QuerySingleOrDefaultAsync<(long Id, string Status)?>(
             "SELECT id, status FROM players WHERE external_id = @playerId", new { playerId = req.PlayerId }, tx);

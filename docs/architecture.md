@@ -84,7 +84,7 @@ rollback 取到 bet 之後，還會用 `SELECT … FOR UPDATE` 鎖住注單，�
 
 ### 3.4 鎖順序（為什麼不會死結）
 
-- advisory lock：一律「自己的 txnId → refTxnId」。bet / settle 只取自己的；兩個 rollback 即使指向同一個 bet 也都是 (own, ref) 的順序，沒有循環等待。
+- advisory lock：一律「自己的 txnId → refTxnId」。bet / settle 只取自己的；兩個 rollback 即使指向同一個 bet 也都是 (own, ref) 的順序，兩個 rollback 彼此互指對方的 txnId（A: txn X → ref Y，B: txn Y → ref X）這種病態輸入仍可能互等，PostgreSQL 會偵測死結並中止其中一個（回 `INTERNAL_ERROR`，遊戲商以同一 txnId 重送即可）；正常使用不會發生。
 - 列鎖：settle / rollback 先鎖注單、再鎖錢包；bet 先鎖錢包、再 INSERT 一筆**新的**注單列。bet 的 `ON CONFLICT DO NOTHING` 遇到已提交的列不會等列鎖，所以不會與持有注單鎖、等待錢包鎖的 rollback 互等。
 
 ## 4. 併發控制的取捨（PLAN §7.4）

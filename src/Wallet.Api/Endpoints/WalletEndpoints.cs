@@ -54,6 +54,7 @@ public static class RequestReader
 {
     public static async Task<T?> ReadAsync<T>(HttpContext ctx) where T : class
     {
+        if (!ctx.Request.HasJsonContentType()) return null; // 否則 ReadFromJsonAsync 會丟 InvalidOperationException → 500，害遊戲商無限重送
         try { return await ctx.Request.ReadFromJsonAsync<T>(ctx.RequestAborted); }
         catch (System.Text.Json.JsonException) { return null; }
         catch (BadHttpRequestException) { return null; }

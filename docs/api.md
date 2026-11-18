@@ -54,7 +54,8 @@ curl -s localhost:8080/api/v1/wallet/balance \
 | `BET_ALREADY_CANCELLED` | 200 | 注單已取消，或下注前已收到取消 | 不重送 |
 | `DUPLICATE_ROUND` | 200 | 同一個 `roundId` 用不同 `txnId` 再次下注 | 不重送 |
 | `RISK_REJECTED` | 200 | 觸發風控規則（**保留，MVP 未實作**，屬加分項） | 不重送 |
-| `INVALID_REQUEST` | 400 | JSON 格式錯誤、缺欄位、金額 ≤ 0 / 超出上限、id 超過 64 字 | 修正請求 |
+| `TXN_CONFLICT` | 200 | `txnId` 已被用在**別種操作或別的玩家**（例如 rollback 帶了下注的 txnId、settle 沿用下注的 txnId）；這不是重送，不會寫入任何資料 | 不重送，改用新的 txnId |
+| `INVALID_REQUEST` | 400 | JSON 格式錯誤、`Content-Type` 不是 JSON、缺必要欄位（含 `amount`）、金額不合法（bet 需 > 0、settle 需 ≥ 0）或超出上限、id 超過 64 字 | 修正請求 |
 | `INVALID_SIGNATURE` | 401 | 簽章 / 時間戳 / 遊戲商錯誤 | 檢查設定 |
 | `INTERNAL_ERROR` | 500 | 系統錯誤（例如資料庫斷線） | **用同一個 txnId 重送** |
 
@@ -72,7 +73,7 @@ curl -s localhost:8080/api/v1/wallet/balance \
 { "playerId": "p_10001", "txnId": "T-8f3a", "roundId": "R-1001", "gameCode": "SLOT01", "amount": 5000 }
 ```
 
-- `amount` > 0（分）。`txnId` 對同一遊戲商全域唯一，是冪等鍵。
+- `amount` 必填且 > 0（分）。`txnId` 對同一遊戲商全域唯一，是冪等鍵：重送必須是**同一個操作**（同類型、同玩家；rollback 還要同一個 `refTxnId`），否則回 `TXN_CONFLICT`。
 - 餘額不足 / 停權 / 下注前已被取消：結果會被**記錄**（`REJECTED` 帳變），之後同一個 `txnId` 重送一律得到同樣答案，即使玩家後來加值。
 - `DUPLICATE_ROUND` 與 `PLAYER_NOT_FOUND` 不留帳變。
 
@@ -82,7 +83,7 @@ curl -s localhost:8080/api/v1/wallet/balance \
 { "playerId": "p_10001", "txnId": "T-9b21", "roundId": "R-1001", "amount": 12000 }
 ```
 
-- `amount` ≥ 0。**派彩為 0 也要呼叫**，用來結束注單。
+- `amount` **必填**且 ≥ 0（缺欄位回 400，不會被當成 0）。**派彩為 0 也要呼叫**（明確帶 `"amount": 0`），用來結束注單。
 - 找不到注單 → `BET_NOT_FOUND`，**不留帳變**，下注到了之後用同一個 `txnId` 重送即可成功。
 
 ### POST `/api/v1/wallet/rollback` — 取消下注並退款

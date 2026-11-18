@@ -12,6 +12,8 @@ public static class ErrorCodes
     public const string DuplicateRound = "DUPLICATE_ROUND";
     public const string RiskRejected = "RISK_REJECTED";
     public const string InvalidSignature = "INVALID_SIGNATURE";
+    /// <summary>txnId 已被用在別種操作 / 別的玩家（不是重送）。不重送，請改用新的 txnId。</summary>
+    public const string TxnConflict = "TXN_CONFLICT";
     public const string InvalidRequest = "INVALID_REQUEST";
     public const string InternalError = "INTERNAL_ERROR";
 }

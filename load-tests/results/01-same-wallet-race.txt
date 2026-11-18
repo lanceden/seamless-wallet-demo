@@ -14,8 +14,8 @@
               * race: 1000 iterations shared among 1000 VUs (maxDuration: 2m0s, gracefulStop: 30s)
 
 
-running (0m00.9s), 0911/1000 VUs, 89 complete and 0 interrupted iterations
-race   [   9% ] 1000 VUs  0m00.9s/2m0s  0089/1000 shared iters
+running (0m00.9s), 0905/1000 VUs, 95 complete and 0 interrupted iterations
+race   [  10% ] 1000 VUs  0m00.9s/2m0s  0095/1000 shared iters
 
 
   █ THRESHOLDS 
@@ -38,7 +38,7 @@ race   [   9% ] 1000 VUs  0m00.9s/2m0s  0089/1000 shared iters
 
   █ TOTAL RESULTS 
 
-    checks_total.......: 1002    544.224995/s
+    checks_total.......: 1002    597.292111/s
     checks_succeeded...: 100.00% 1002 out of 1002
     checks_failed......: 0.00%   0 out of 1002
 
@@ -47,29 +47,29 @@ race   [   9% ] 1000 VUs  0m00.9s/2m0s  0089/1000 shared iters
     ✓ accounting invariants hold
 
     CUSTOM
-    bet_insufficient...............: 900    488.824846/s
-    bet_ok.........................: 100    54.313872/s
+    bet_insufficient...............: 900    536.48992/s
+    bet_ok.........................: 100    59.609991/s
     bet_other......................: 0      0/s
 
     HTTP
-    http_req_duration..............: avg=1.06s med=1.05s p(90)=1.41s p(95)=1.57s p(99)=1.69s max=1.78s
-      { expected_response:true }...: avg=1.06s med=1.05s p(90)=1.41s p(95)=1.57s p(99)=1.69s max=1.78s
+    http_req_duration..............: avg=927.3ms  med=941.48ms p(90)=1.23s p(95)=1.35s p(99)=1.46s max=1.49s
+      { expected_response:true }...: avg=927.3ms  med=941.48ms p(90)=1.23s p(95)=1.35s p(99)=1.46s max=1.49s
     http_req_failed................: 0.00%  0 out of 1005
-    http_reqs......................: 1005   545.854411/s
+    http_reqs......................: 1005   599.08041/s
 
     EXECUTION
-    iteration_duration.............: avg=1.09s med=1.07s p(90)=1.45s p(95)=1.61s p(99)=1.73s max=1.8s 
-    iterations.....................: 1000   543.138717/s
-    vus............................: 911    min=911       max=911 
+    iteration_duration.............: avg=982.57ms med=991.04ms p(90)=1.3s  p(95)=1.43s p(99)=1.53s max=1.64s
+    iterations.....................: 1000   596.099911/s
+    vus............................: 905    min=905       max=905 
     vus_max........................: 1000   min=1000      max=1000
 
     NETWORK
-    data_received..................: 252 kB 137 kB/s
-    data_sent......................: 387 kB 210 kB/s
+    data_received..................: 252 kB 150 kB/s
+    data_sent......................: 387 kB 231 kB/s
 
 
 
 
-running (0m01.8s), 0000/1000 VUs, 1000 complete and 0 interrupted iterations
-race ✓ [ 100% ] 1000 VUs  0m01.8s/2m0s  1000/1000 shared iters
+running (0m01.7s), 0000/1000 VUs, 1000 complete and 0 interrupted iterations
+race ✓ [ 100% ] 1000 VUs  0m01.6s/2m0s  1000/1000 shared iters
 k6 exit code: 0

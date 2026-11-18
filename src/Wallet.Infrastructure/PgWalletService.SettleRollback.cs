@@ -19,7 +19,7 @@ public sealed partial class PgWalletService
 
         await Ledger.LockTxnAsync(conn, tx, providerId, req.TxnId!);
         var existing = await Ledger.FindAsync(conn, tx, providerId, req.TxnId!);
-        if (existing is not null) return Ledger.Replay(existing, req.TxnId!);
+        if (existing is not null) return Ledger.ReplayOrConflict(existing, req.TxnId!, "SETTLE", req.PlayerId!);
 
         var playerId = await conn.ExecuteScalarAsync<long?>(
             "SELECT id FROM players WHERE external_id = @p", new { p = req.PlayerId }, tx);
@@ -68,7 +68,7 @@ public sealed partial class PgWalletService
 
         await Ledger.LockTxnAsync(conn, tx, providerId, req.TxnId!);
         var existing = await Ledger.FindAsync(conn, tx, providerId, req.TxnId!);
-        if (existing is not null) return Ledger.Replay(existing, req.TxnId!);
+        if (existing is not null) return Ledger.ReplayOrConflict(existing, req.TxnId!, "ROLLBACK", req.PlayerId!, req.RefTxnId);
         await Ledger.LockTxnAsync(conn, tx, providerId, req.RefTxnId!);
 
         var playerId = await conn.ExecuteScalarAsync<long?>(

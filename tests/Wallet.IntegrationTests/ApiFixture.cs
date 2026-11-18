@@ -57,13 +57,13 @@ public sealed class ApiFixture : IAsyncLifetime
     // ---------- 簽章呼叫 ----------
     public async Task<(HttpStatusCode Status, JsonElement Body)> SignedPostAsync(
         string path, object body, string provider = ProviderCode, string secret = ProviderSecret,
-        long? timestamp = null, string? rawOverride = null, string? signatureOverride = null)
+        long? timestamp = null, string? rawOverride = null, string? signatureOverride = null, string contentType = "application/json")
     {
         var raw = rawOverride ?? JsonSerializer.Serialize(body);
         var ts = (timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ToString();
         var req = new HttpRequestMessage(HttpMethod.Post, path)
         {
-            Content = new StringContent(raw, Encoding.UTF8, "application/json")
+            Content = new StringContent(raw, Encoding.UTF8, contentType)
         };
         req.Headers.Add("X-Provider-Code", provider);
         req.Headers.Add("X-Timestamp", ts);

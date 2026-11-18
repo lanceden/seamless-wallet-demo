@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Wallet.Core.Models;
 
 public sealed record ProviderInfo(int Id, string Code, string Secret, string Status)
@@ -10,9 +12,9 @@ public sealed record WalletResponse(string Code, long? Balance, string? TxnId, l
 
 public sealed record BalanceRequest(string? PlayerId);
 
-public sealed record BetRequest(string? PlayerId, string? TxnId, string? RoundId, string? GameCode, long Amount);
+public sealed record BetRequest(string? PlayerId, string? TxnId, string? RoundId, string? GameCode, [property: JsonRequired] long Amount);
 
-public sealed record SettleRequest(string? PlayerId, string? TxnId, string? RoundId, long Amount);
+public sealed record SettleRequest(string? PlayerId, string? TxnId, string? RoundId, [property: JsonRequired] long Amount);
 
 public sealed record RollbackRequest(string? PlayerId, string? TxnId, string? RefTxnId);
 

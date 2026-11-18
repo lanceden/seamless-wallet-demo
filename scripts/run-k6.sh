@@ -14,7 +14,7 @@ mkdir -p "$root/load-tests/results"
 # Git Bash on Windows：用 pwd -W 取 Windows 路徑，並關閉 MSYS 路徑轉換
 if mount_path="$(cd "$root" && pwd -W 2>/dev/null)"; then export MSYS_NO_PATHCONV=1; else mount_path="$root"; fi
 
-net_args=(--network seamlesswalletdemo_default)
+net_args=(--network seamless-wallet-demo_default)
 base_default="http://wallet-api:8080"
 if [ "${K6_NETWORK:-}" = "host-proxy" ]; then
   net_args=()

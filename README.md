@@ -122,7 +122,7 @@ scripts/fault-test.sh kill-api                # 故障測試：docker kill API�
 - 只有 TWD 單一幣別；`players.currency` 沒有被使用。
 - Redis 容器已在 compose 裡，但**沒有使用**；`RISK_REJECTED` 錯誤碼保留，風控 / 限流是加分項，未實作。SignalR、多層代理 / 佣金、轉帳錢包、OpenTelemetry 也未實作（PLAN「加分」）。
 - 對帳完成時只記 log，沒有 Webhook 通知；營業日固定為 UTC。
-- 同一個 txnId 以**不同內容**重送（金額、玩家不同）時，直接回傳第一次的結果，不會報錯。
+- 同一個 txnId 以**不同金額**重送時，直接回傳第一次的結果，不會報錯（類型或玩家不同則回 `TXN_CONFLICT`）。
 - 壓測數字是單機、負載產生器同機的結果。
 
 **上正式環境還要做**

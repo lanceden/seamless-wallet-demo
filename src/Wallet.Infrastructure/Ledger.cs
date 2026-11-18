@@ -7,7 +7,11 @@ namespace Wallet.Infrastructure;
 /// <summary>錢包交易共用的 SQL 小零件。所有方法都必須在呼叫端開好的 transaction 內執行。</summary>
 internal static class Ledger
 {
-    public sealed record ExistingTxn(string Status, string? ErrorCode, long BalanceAfter, long CreatedEpoch);
+    public sealed record ExistingTxn(string Status, string? ErrorCode, long BalanceAfter, long CreatedEpoch,
+        string Type, string PlayerExternalId, string? RefTxnId);
+
+    /// <summary>回應用的 unix 秒：向下取整（::bigint 會四捨五入，會讓 23:59:59.6 的帳被歸到隔天，與對帳視窗對不上）。</summary>
+    private const string EpochSql = "floor(extract(epoch FROM created_at))::bigint";
 
     /// <summary>
     /// 以 (provider, txnId) 取 transaction 範圍的 advisory lock：
@@ -20,13 +24,23 @@ internal static class Ledger
 
     public static Task<ExistingTxn?> FindAsync(NpgsqlConnection conn, NpgsqlTransaction tx, int providerId, string txnId)
         => conn.QuerySingleOrDefaultAsync<ExistingTxn?>(
-            @"SELECT status AS Status, error_code AS ErrorCode, balance_after AS BalanceAfter,
-                     extract(epoch FROM created_at)::bigint AS CreatedEpoch
-                FROM wallet_transactions WHERE provider_id = @providerId AND txn_id = @txnId",
+            $@"SELECT t.status AS Status, t.error_code AS ErrorCode, t.balance_after AS BalanceAfter,
+                     floor(extract(epoch FROM t.created_at))::bigint AS CreatedEpoch,
+                     t.type AS Type, p.external_id AS PlayerExternalId, t.ref_txn_id AS RefTxnId
+                FROM wallet_transactions t JOIN players p ON p.id = t.player_id
+               WHERE t.provider_id = @providerId AND t.txn_id = @txnId",
             new { providerId, txnId }, tx);
 
-    /// <summary>把已存在的帳變還原成當初回給遊戲商的回應（含原本的 timestamp）。</summary>
-    public static WalletResponse Replay(ExistingTxn e, string txnId)
+    /// <summary>
+    /// 重送必須是「同一個操作」：type、玩家（rollback 還要 refTxnId）都相同才重播第一次的結果；
+    /// 否則是 txnId 被拿去做別的事（例如 rollback 帶了下注的 txnId），回 TXN_CONFLICT，不寫入、不洩漏別人的餘額。
+    /// </summary>
+    public static WalletResponse ReplayOrConflict(ExistingTxn e, string txnId, string type, string playerId, string? refTxnId = null)
+        => e.Type != type || e.PlayerExternalId != playerId || (refTxnId is not null && e.RefTxnId != refTxnId)
+            ? new WalletResponse(ErrorCodes.TxnConflict, null, null, DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            : Replay(e, txnId);
+
+    private static WalletResponse Replay(ExistingTxn e, string txnId)
         => e.Status == "SUCCESS"
             ? new WalletResponse(ErrorCodes.Ok, e.BalanceAfter, txnId, e.CreatedEpoch)
             : new WalletResponse(e.ErrorCode ?? ErrorCodes.InternalError, e.BalanceAfter, txnId, e.CreatedEpoch);
@@ -42,7 +56,7 @@ internal static class Ledger
             @"INSERT INTO wallet_transactions
                 (provider_id, txn_id, player_id, type, amount, balance_before, balance_after, status, error_code, round_id, ref_txn_id)
               VALUES (@ProviderId, @TxnId, @PlayerId, @Type, @Amount, @BalanceBefore, @BalanceAfter, @Status, @ErrorCode, @RoundId, @RefTxnId)
-              RETURNING extract(epoch FROM created_at)::bigint", t, tx);
+              RETURNING " + EpochSql, t, tx);
         return t.Status == "SUCCESS"
             ? new WalletResponse(ErrorCodes.Ok, t.BalanceAfter, t.TxnId, epoch)
             : new WalletResponse(t.ErrorCode!, t.BalanceAfter, t.TxnId, epoch);
