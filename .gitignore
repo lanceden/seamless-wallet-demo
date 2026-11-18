@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+.superpowers/
+TestResults/
+*.csv
+!load-tests/**/*.csv
