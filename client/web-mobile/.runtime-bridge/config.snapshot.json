@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "protected": false,
+  "platforms": null,
+  "stagingEntries": [
+    "main.js"
+  ],
+  "exportEntries": [
+    "index.js"
+  ],
+  "finalEntries": [
+    "index.js"
+  ],
+  "alliance": "off",
+  "startup": {
+    "mode": "native",
+    "module": null,
+    "timeoutMs": 10000
+  },
+  "policy": {
+    "auth": {
+      "algorithm": "RSA-SHA256",
+      "keyId": "runtime-policy-integration",
+      "signature": "AQf05VHvQdPTdHrBeMPFA5O8T0pSAkn7CHCMzzBOK2gOkDWW5fiKR+l7OYivz/qKEhol+tQQEWrs90AZUNAdYYGTUApNs47mV4Umsb+VcpHIz6eNDyu2KWvSVeLJgPBOCdbjfKSaxV3RuM3oMu2PKl61GZ70GATNIZzEHLRzIAXhUU9ShHLH+ROmnHQPxBNZ5a92XomEjGYpmUAIigYPMN/PkJeU3/i6l4SUniYH+5+9H9AsadzwaaVFTvRom0lWuSiyefAb16mvqvMj/ZYNSFaxQqxy3UqyAMofKPfEwW5z93QOuRplqGe/6wtHvP9nt/bm9ku/50Ol/q78Kqz4iA=="
+    },
+    "contract": "H4sIAAAAAAAAAG2MMQ7DIBAE/7I1XTpekT6iwHA4KIcvPiAN4u9Brt3taEY7QIffmCJs8lzJ4Mu+JdECO7CxhA/syxkUiQQLSQkGVboGqssMBM+8Bs59iZ3aU+WXIyncdNPg7KT5Su+Sdaz9aLlcxaIa3lQ87GP+AVMmqxSaAAAA",
+    "creators": [
+      "2.4.12",
+      "2.4.15",
+      "3.7.3",
+      "3.8.3",
+      "3.8.5",
+      "3.8.6",
+      "3.8.7",
+      "3.8.8"
+    ],
+    "exceptTargets": [
+      "honor-mini-game",
+      "honor-minigame",
+      "huawei",
+      "huawei-quick-game",
+      "oppo-mini-game",
+      "qgame",
+      "quickgame",
+      "vivo-mini-game",
+      "xiaomi",
+      "xiaomi-quick-game"
+    ],
+    "format": 1,
+    "id": "default-allow",
+    "prefixes": [
+      "",
+      ""
+    ],
+    "revision": 2,
+    "sha256": "b8e444ead7bc08a215e3c6e545d10bca02356694a744dfa5f357eae6a9fa1c99",
+    "targets": [
+      "*"
+    ]
+  },
+  "namespace": "env:prod"
+}
