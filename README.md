@@ -31,6 +31,7 @@
 docker compose up -d --build
 ```
 
+- **Demo 頁面**：<http://localhost:8080/>（純前端，瀏覽器用 WebCrypto 簽章後直接呼叫遊戲商端點）：建玩家 / 加值 / 下注 / 派彩 / 取消、一鍵「重送同一個 txnId」、亂序情境、同錢包 60 筆併發下注、同一 txnId 併發 30 次，並即時顯示餘額、帳變、注單、請求回應與帳務不變式。
 - Swagger：<http://localhost:8080/swagger>
 - 資料表由 API 啟動時自動套用（`db/migrations/*.sql`），不必手動建表。
 - 內建示範遊戲商 `DEMO`，secret 為 `demo-secret`（**僅供示範**）。
