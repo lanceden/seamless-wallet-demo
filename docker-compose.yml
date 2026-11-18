@@ -6,6 +6,9 @@ services:
       POSTGRES_DB: wallet
       POSTGRES_USER: wallet
       POSTGRES_PASSWORD: wallet
+    command: ["postgres", "-c", "max_connections=300"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     ports:
       - "5433:5432"   # 本機 5432 常被佔用，對外改 5433
     healthcheck:
@@ -27,7 +30,12 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=wallet;Username=wallet;Password=wallet;Maximum Pool Size=100"
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=wallet;Username=wallet;Password=wallet;Maximum Pool Size=200"
     ports:
       - "8080:8080"
+    volumes:
+      - ./reports:/app/reports   # 遊戲商報表放這裡，對帳排程／API 從這讀
     restart: unless-stopped
+
+volumes:
+  pgdata:

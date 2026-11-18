@@ -62,4 +62,26 @@ public sealed class PgAdminService(NpgsqlDataSource ds) : IAdminService
             new { pid, offset = (page - 1) * pageSize, pageSize })).ToList();
         return new PagedResult<TransactionRow>(page, pageSize, total, items);
     }
+
+    public async Task<PagedResult<BetDto>> ListBetsAsync(BetQuery q, CancellationToken ct = default)
+    {
+        var page = Math.Max(1, q.Page);
+        var pageSize = Math.Clamp(q.PageSize, 1, 200);
+        await using var conn = await ds.OpenConnectionAsync(ct);
+        // 篩選條件為可選：以 (@x IS NULL OR ...) 組成固定 SQL，避免字串拼接
+        const string where = @"WHERE (@playerId::text IS NULL OR p.external_id = @playerId)
+                                 AND (@status::text IS NULL OR b.status = @status)
+                                 AND (@from::timestamptz IS NULL OR b.created_at >= @from)
+                                 AND (@to::timestamptz IS NULL OR b.created_at < @to)";
+        var args = new { playerId = q.PlayerId, status = q.Status, from = q.From, to = q.To, offset = (page - 1) * pageSize, pageSize };
+        var total = await conn.ExecuteScalarAsync<int>(
+            $"SELECT count(*) FROM bets b JOIN players p ON p.id = b.player_id {where}", args);
+        var items = (await conn.QueryAsync<BetDto>(
+            $@"SELECT b.id AS Id, pr.code AS ProviderCode, b.round_id AS RoundId, p.external_id AS PlayerId, b.game_code AS GameCode,
+                      b.bet_amount AS BetAmount, b.payout_amount AS PayoutAmount, b.status AS Status, b.bet_txn_id AS BetTxnId,
+                      b.created_at AS CreatedAt, b.settled_at AS SettledAt
+                 FROM bets b JOIN players p ON p.id = b.player_id JOIN providers pr ON pr.id = b.provider_id
+                {where} ORDER BY b.id DESC OFFSET @offset LIMIT @pageSize", args)).ToList();
+        return new PagedResult<BetDto>(page, pageSize, total, items);
+    }
 }

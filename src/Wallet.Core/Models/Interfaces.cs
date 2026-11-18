@@ -25,5 +25,6 @@ public interface IAdminService
     /// <summary>建立遊戲商；code 已存在回傳 false。</summary>
     Task<bool> CreateProviderAsync(string code, string secret, CancellationToken ct = default);
     Task<DepositResult?> DepositAsync(string externalId, long amount, CancellationToken ct = default);
+    Task<PagedResult<BetDto>> ListBetsAsync(BetQuery query, CancellationToken ct = default);
     Task<PagedResult<TransactionRow>?> ListTransactionsAsync(string externalId, int page, int pageSize, CancellationToken ct = default);
 }

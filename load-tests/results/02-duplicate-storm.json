@@ -1,0 +1,179 @@
+{
+    "metrics": {
+        "iteration_duration": {
+            "avg": 166.68531388,
+            "med": 160.237486,
+            "p(90)": 199.372735,
+            "p(95)": 204.3855691,
+            "p(99)": 208.61885927999998,
+            "max": 210.177563
+        },
+        "data_sent": {
+            "count": 26117,
+            "rate": 61456.948924884484
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 104,
+            "thresholds": {
+                "rate==0": false
+            },
+            "value": 0
+        },
+        "http_reqs": {
+            "count": 104,
+            "rate": 244.7265263310482
+        },
+        "http_req_waiting": {
+            "med": 41.942156,
+            "p(90)": 182.7520145,
+            "p(95)": 191.6250716,
+            "p(99)": 201.64331325,
+            "max": 201.864663,
+            "avg": 81.07338984615383
+        },
+        "http_req_receiving": {
+            "avg": 0.10528528846153841,
+            "med": 0.07577500000000001,
+            "p(90)": 0.18692380000000003,
+            "p(95)": 0.22646784999999992,
+            "p(99)": 0.3325059799999999,
+            "max": 0.821003
+        },
+        "iterations": {
+            "count": 50,
+            "rate": 117.65698381300395
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 0
+        },
+        "http_req_connecting": {
+            "avg": 0.36228054807692317,
+            "med": 0.0550085,
+            "p(90)": 1.1098443,
+            "p(95)": 1.5421732999999995,
+            "p(99)": 2.64538407,
+            "max": 2.697049
+        },
+        "data_received": {
+            "count": 49197,
+            "rate": 115767.4126529671
+        },
+        "http_req_blocked": {
+            "med": 0.0789655,
+            "p(90)": 1.5175493,
+            "p(95)": 2.042737249999999,
+            "p(99)": 2.8695837799999997,
+            "max": 3.073416,
+            "avg": 0.4736924326923078
+        },
+        "http_req_sending": {
+            "p(95)": 0.6447606999999985,
+            "p(99)": 1.1734658099999997,
+            "max": 1.262756,
+            "avg": 0.10901010576923079,
+            "med": 0.025104,
+            "p(90)": 0.24142770000000013
+        },
+        "checks": {
+            "passes": 301,
+            "fails": 0,
+            "thresholds": {
+                "rate==1": false
+            },
+            "value": 1
+        },
+        "http_req_duration": {
+            "p(95)": 192.68447534999999,
+            "p(99)": 201.83850477000001,
+            "max": 203.177247,
+            "avg": 81.28768524038463,
+            "med": 42.0677075,
+            "p(90)": 182.8682963
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(90)": 182.8682963,
+            "p(95)": 192.68447534999999,
+            "p(99)": 201.83850477000001,
+            "max": 203.177247,
+            "avg": 81.28768524038463,
+            "med": 42.0677075
+        }
+    },
+    "setup_data": {
+        "playerId": "storm-mwlnapyi",
+        "roundId": "R-storm-mwlnapyi",
+        "txnId": "T-storm-mwlnapyi"
+    },
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {
+            "teardown": {
+                "name": "teardown",
+                "path": "::teardown",
+                "id": "a8a9942382e8ffe2e56ef29e664b8229",
+                "groups": {},
+                "checks": {
+                    "accounting invariants hold": {
+                        "name": "accounting invariants hold",
+                        "path": "::teardown::accounting invariants hold",
+                        "id": "55125c8a7425a4b8a24c57e762df0e6f",
+                        "passes": 1,
+                        "fails": 0
+                    }
+                }
+            }
+        },
+        "checks": {
+            "code is OK": {
+                "name": "code is OK",
+                "path": "::code is OK",
+                "id": "bd259cbdff5c38f14a7f940510c1ccd2",
+                "passes": 50,
+                "fails": 0
+            },
+            "balance is charged exactly once": {
+                "name": "balance is charged exactly once",
+                "path": "::balance is charged exactly once",
+                "id": "2ae90612e9b50dac0dd2960b96f1a039",
+                "passes": 50,
+                "fails": 0
+            },
+            "txnId echoed": {
+                "name": "txnId echoed",
+                "path": "::txnId echoed",
+                "id": "6827f3c9da91bf62f665ed11dba5acb0",
+                "passes": 50,
+                "fails": 0
+            },
+            "exactly one BET ledger row": {
+                "name": "exactly one BET ledger row",
+                "path": "::exactly one BET ledger row",
+                "id": "90416d7542f9d6cc04db317d9b3bf88d",
+                "passes": 50,
+                "fails": 0
+            },
+            "response timestamp equals the ledger row time": {
+                "name": "response timestamp equals the ledger row time",
+                "path": "::response timestamp equals the ledger row time",
+                "id": "9cf6e41f420a0f964835a20786a07a4c",
+                "passes": 50,
+                "fails": 0
+            },
+            "ledger balanceAfter equals response balance": {
+                "name": "ledger balanceAfter equals response balance",
+                "path": "::ledger balanceAfter equals response balance",
+                "id": "fad2d2258bf0fef074c5c843872c8fe2",
+                "passes": 50,
+                "fails": 0
+            }
+        },
+        "name": ""
+    }
+}

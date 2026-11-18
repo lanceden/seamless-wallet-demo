@@ -47,10 +47,31 @@ public static class AdminEndpoints
                 statusCode: violations.Count == 0 ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError);
         });
 
+        // 注單查詢：playerId / status / from（含）/ to（不含）皆可選，皆以 UTC 比較 created_at
+        g.MapGet("/bets", async (IAdminService svc, CancellationToken ct,
+            string? playerId, string? status, string? from, string? to, int page = 1, int pageSize = 50) =>
+        {
+            if (status is not null && status is not ("PENDING" or "SETTLED" or "CANCELLED"))
+                return Results.BadRequest(new { error = "status must be PENDING, SETTLED or CANCELLED" });
+            if (!TryUtc(from, out var f) || !TryUtc(to, out var t))
+                return Results.BadRequest(new { error = "from/to must be ISO-8601 timestamps" });
+            return Results.Ok(await svc.ListBetsAsync(new BetQuery(playerId, status, f, t, page, pageSize), ct));
+        });
+
         g.MapGet("/players/{id}/transactions", async (string id, IAdminService svc, CancellationToken ct, int page = 1, int pageSize = 50) =>
         {
             var r = await svc.ListTransactionsAsync(id, page, pageSize, ct);
             return r is null ? Results.NotFound(new { error = "player not found" }) : Results.Ok(r);
         });
+    }
+
+    private static bool TryUtc(string? s, out DateTime? value)
+    {
+        value = null;
+        if (string.IsNullOrEmpty(s)) return true;
+        if (!DateTimeOffset.TryParse(s, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AssumeUniversal, out var dto)) return false;
+        value = dto.UtcDateTime;
+        return true;
     }
 }
