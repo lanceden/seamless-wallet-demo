@@ -4,10 +4,11 @@ using Wallet.Infrastructure;
 
 namespace Wallet.IntegrationTests;
 
-public class MigrationTests : IClassFixture<PostgresFixture>
+[Collection(ApiCollection.Name)]
+public class MigrationTests
 {
-    private readonly PostgresFixture _pg;
-    public MigrationTests(PostgresFixture pg) => _pg = pg;
+    private readonly ApiFixture _pg;
+    public MigrationTests(ApiFixture pg) => _pg = pg;
 
     [Fact]
     public async Task Migration_creates_all_tables_and_seeds_system_provider()
