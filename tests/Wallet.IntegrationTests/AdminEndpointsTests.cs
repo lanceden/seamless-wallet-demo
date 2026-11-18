@@ -86,4 +86,37 @@ public class AdminEndpointsTests(ApiFixture fixture) : ApiTestBase(fixture)
         Assert.Equal(1, page3.GetProperty("items").GetArrayLength());
         Assert.Equal(100, page3.GetProperty("items")[0].GetProperty("amount").GetInt64());
     }
+
+    [Fact]
+    public async Task Create_provider_returns_201_and_the_new_provider_can_sign_requests()
+    {
+        var code = "PRV_" + Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+        var r = await Api.Http.PostAsJsonAsync("/admin/providers", new { code, secret = "s3cret-value" });
+        Assert.Equal(HttpStatusCode.Created, r.StatusCode);
+
+        var p = await Api.CreatePlayerAsync(500);
+        var (status, body) = await Api.SignedPostAsync("/api/v1/wallet/balance", new { playerId = p }, provider: code, secret: "s3cret-value");
+        Assert.Equal(HttpStatusCode.OK, status);
+        Assert.Equal(500, body.GetProperty("balance").GetInt64());
+    }
+
+    [Fact]
+    public async Task Create_duplicate_provider_is_409()
+    {
+        var code = "PRV_" + Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+        (await Api.Http.PostAsJsonAsync("/admin/providers", new { code, secret = "s3cret-value" })).EnsureSuccessStatusCode();
+        var again = await Api.Http.PostAsJsonAsync("/admin/providers", new { code, secret = "other-secret" });
+        Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("lower", "s3cret-value")]
+    [InlineData("TOO_SHORT_SECRET", "abc")]
+    [InlineData("", "s3cret-value")]
+    [InlineData("SYSTEM!", "s3cret-value")]
+    public async Task Create_provider_with_invalid_input_is_400(string code, string secret)
+    {
+        var r = await Api.Http.PostAsJsonAsync("/admin/providers", new { code, secret });
+        Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
+    }
 }

@@ -4,12 +4,24 @@ namespace Wallet.Api.Endpoints;
 
 public sealed record CreatePlayerRequest(string? ExternalId);
 public sealed record DepositRequest(long Amount);
+public sealed record CreateProviderRequest(string? Code, string? Secret);
 
 public static class AdminEndpoints
 {
     public static void MapAdminEndpoints(this IEndpointRouteBuilder app)
     {
         var g = app.MapGroup("/admin");
+
+        // 建立遊戲商（code：大寫英數與底線 2~32 字；secret：8~128 字）
+        g.MapPost("/providers", async (CreateProviderRequest req, IAdminService svc, CancellationToken ct) =>
+        {
+            if (req.Code is null || !System.Text.RegularExpressions.Regex.IsMatch(req.Code, "^[A-Z0-9_]{2,32}$") || req.Code == "SYSTEM"
+                || req.Secret is null || req.Secret.Length < 8 || req.Secret.Length > 128)
+                return Results.BadRequest(new { error = "code must match ^[A-Z0-9_]{2,32}$ and secret must be 8..128 chars" });
+            return await svc.CreateProviderAsync(req.Code, req.Secret, ct)
+                ? Results.Created($"/admin/providers/{req.Code}", new { code = req.Code })
+                : Results.Conflict(new { error = "provider already exists" });
+        });
 
         g.MapPost("/players", async (CreatePlayerRequest req, IAdminService svc, CancellationToken ct) =>
         {

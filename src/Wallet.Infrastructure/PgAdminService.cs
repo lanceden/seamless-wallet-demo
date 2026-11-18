@@ -19,6 +19,14 @@ public sealed class PgAdminService(NpgsqlDataSource ds) : IAdminService
         return (CreatePlayerOutcome.Created, new PlayerDto(id.Value, externalId, 0));
     }
 
+    public async Task<bool> CreateProviderAsync(string code, string secret, CancellationToken ct = default)
+    {
+        await using var conn = await ds.OpenConnectionAsync(ct);
+        var id = await conn.ExecuteScalarAsync<int?>(
+            "INSERT INTO providers(code, secret) VALUES (@code, @secret) ON CONFLICT (code) DO NOTHING RETURNING id", new { code, secret });
+        return id is not null;
+    }
+
     public async Task<DepositResult?> DepositAsync(string externalId, long amount, CancellationToken ct = default)
     {
         await using var conn = await ds.OpenConnectionAsync(ct);
