@@ -1,7 +1,7 @@
 # 遊戲前端（H5 構建）
 
 `web-mobile/` 是 Cocos Creator 前端的 **Web Mobile 構建輸出**，由 `docker compose up` 的 `slot-client`（nginx，port **8082**）提供。
-前端原始碼在另一個專案 `SeamlessWalletClient`（Cocos Creator **3.8.8** + TypeScript，不在這個 repo 裡）。
+前端原始碼在另一個 repo：[`slot-cocos-client`](https://github.com/lanceden/slot-cocos-client)（Cocos Creator **3.8.8** + TypeScript，不在這個 repo 裡）。
 
 玩法：`docker compose up -d --build` 後開 <http://localhost:8080/>（錢包 Demo 頁）→ 建玩家、加值 → 按「**開始遊戲（SLOT 老虎機）**」→ 點「開啟遊戲」。
 錢包（平台）會簽章呼叫遊戲商開局，回傳的 `gameUrl` 就是 `http://localhost:8082/?token=…`；前端預設連「與網頁同主機的 8081」（遊戲伺服器），不需要額外設定。
@@ -16,7 +16,7 @@
 | Debug | 關閉 |
 | 其他 | 預設值（模組、壓縮、MD5 快取等） |
 
-構建完成後把 `SeamlessWalletClient/build/web-mobile/` 整個複製到 `client/web-mobile/` 取代即可。
+構建完成後把前端專案的 `build/web-mobile/` 整個複製到 `client/web-mobile/` 取代即可。
 
 ## 大小
 

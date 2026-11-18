@@ -113,10 +113,9 @@ Wallet API（平台）                         Slot.GameServer（遊戲商）   
 
 > 停機測試中，單局內的重試（3 次 × 最長 5 秒逾時）本身就救回了大部分請求，只有停機超過這個視窗的才走到倒退 / Worker。SETTLING 的補派彩路徑（停機剛好發生在 bet 成功與 settle 之間）難以用真實停機穩定重現，由整合測試以故障注入覆蓋。
 
-## 10. 前端串接驗證（Cocos 前端 `SeamlessWalletClient`）
+## 10. 前端串接驗證（Cocos 前端 `slot-cocos-client`）
 
-前端專案在 repo 外（`Z:
-epo\SeamlessWalletClient`，Cocos Creator 3.8.8），網路層 `Protocol.ts` / `NetService.ts` 已照本文件的 API 合約實作。用內建瀏覽器開編輯器的預覽（`http://localhost:7456/?token=…&api=http://localhost:8081`，token 由錢包 `POST /admin/players/{id}/launch?provider=SLOT` 取得），對**真實的**錢包 + 遊戲伺服器 + PostgreSQL 逐項操作：
+前端專案在另一個 repo [`slot-cocos-client`](https://github.com/lanceden/slot-cocos-client)（Cocos Creator 3.8.8），網路層 `Protocol.ts` / `NetService.ts` 已照本文件的 API 合約實作。用內建瀏覽器開編輯器的預覽（`http://localhost:7456/?token=…&api=http://localhost:8081`，token 由錢包 `POST /admin/players/{id}/launch?provider=SLOT` 取得），對**真實的**錢包 + 遊戲伺服器 + PostgreSQL 逐項操作：
 
 | 情境 | 結果 |
 |---|---|

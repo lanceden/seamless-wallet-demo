@@ -136,7 +136,7 @@ scripts/fault-test.sh kill-api                # 故障測試：docker kill API�
 
 ## 老虎機（遊戲商）
 
-除了錢包，repo 裡還有一個完整的「遊戲商」：5×3、10 線老虎機的數學、RTP 模擬器，以及串接錢包的遊戲伺服器（Cocos 前端在另一個專案）。
+除了錢包，repo 裡還有一個完整的「遊戲商」：5×3、10 線老虎機的數學、RTP 模擬器，以及串接錢包的遊戲伺服器。Cocos 前端的原始碼在另一個 repo：[`slot-cocos-client`](https://github.com/lanceden/slot-cocos-client)。
 
 - **Slot.Core / Slot.RtpSimulator**：連線算分、WILD、伺服器端 RNG；完整列舉 + 蒙地卡羅算 RTP，並有調參器。正式設定 **RTP 95.995%**（1,000 萬局模擬 95.981%）。見 [`docs/slot-math.md`](docs/slot-math.md)。
 - **Slot.GameServer**：`/provider/launch`、`/game/init`、`/game/spin`、`/game/last-round`；結果完全由伺服器決定，錢包 bet / settle / rollback 全部冪等，**補派彩 Worker 保證玩家贏的錢不會因為網路問題消失**。見 [`docs/slot-server.md`](docs/slot-server.md)。
