@@ -15,6 +15,8 @@ public class InternalErrorTests(ApiFixture api)
     {
         public Task<WalletResponse> GetBalanceAsync(int providerId, string playerId, CancellationToken ct = default) => throw new InvalidOperationException("db down");
         public Task<WalletResponse> BetAsync(int providerId, BetRequest req, CancellationToken ct = default) => throw new InvalidOperationException("db down");
+        public Task<WalletResponse> SettleAsync(int providerId, SettleRequest req, CancellationToken ct = default) => throw new InvalidOperationException("db down");
+        public Task<WalletResponse> RollbackAsync(int providerId, RollbackRequest req, CancellationToken ct = default) => throw new InvalidOperationException("db down");
     }
 
     [Fact]

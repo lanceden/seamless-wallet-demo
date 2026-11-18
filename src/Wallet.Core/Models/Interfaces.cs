@@ -9,6 +9,8 @@ public interface IWalletService
 {
     Task<WalletResponse> GetBalanceAsync(int providerId, string playerId, CancellationToken ct = default);
     Task<WalletResponse> BetAsync(int providerId, BetRequest req, CancellationToken ct = default);
+    Task<WalletResponse> SettleAsync(int providerId, SettleRequest req, CancellationToken ct = default);
+    Task<WalletResponse> RollbackAsync(int providerId, RollbackRequest req, CancellationToken ct = default);
 }
 
 public interface IInvariantService

@@ -4,7 +4,7 @@ using Wallet.Core.Models;
 
 namespace Wallet.Infrastructure;
 
-public sealed class PgWalletService(NpgsqlDataSource ds) : IWalletService
+public sealed partial class PgWalletService(NpgsqlDataSource ds) : IWalletService
 {
     private static long Now() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 

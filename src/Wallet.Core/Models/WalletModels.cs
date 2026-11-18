@@ -12,6 +12,10 @@ public sealed record BalanceRequest(string? PlayerId);
 
 public sealed record BetRequest(string? PlayerId, string? TxnId, string? RoundId, string? GameCode, long Amount);
 
+public sealed record SettleRequest(string? PlayerId, string? TxnId, string? RoundId, long Amount);
+
+public sealed record RollbackRequest(string? PlayerId, string? TxnId, string? RefTxnId);
+
 public sealed record PlayerDto(long Id, string ExternalId, long Balance);
 
 public sealed record DepositResult(string ExternalId, long Balance, string TxnId);

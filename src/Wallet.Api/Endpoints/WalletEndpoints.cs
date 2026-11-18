@@ -27,6 +27,26 @@ public static class WalletEndpoints
             var provider = (ProviderInfo)ctx.Items[SignatureMiddleware.ProviderItemKey]!;
             return Results.Json(await svc.BetAsync(provider.Id, req, ctx.RequestAborted));
         });
+
+        g.MapPost("/settle", async (HttpContext ctx, IWalletService svc) =>
+        {
+            var req = await RequestReader.ReadAsync<SettleRequest>(ctx);
+            if (req is null || !RequestReader.ValidId(req.PlayerId) || !RequestReader.ValidId(req.TxnId)
+                || !RequestReader.ValidId(req.RoundId) || req.Amount < 0 || req.Amount > Limits.MaxAmount)
+                return RequestReader.BadRequest();
+            var provider = (ProviderInfo)ctx.Items[SignatureMiddleware.ProviderItemKey]!;
+            return Results.Json(await svc.SettleAsync(provider.Id, req, ctx.RequestAborted));
+        });
+
+        g.MapPost("/rollback", async (HttpContext ctx, IWalletService svc) =>
+        {
+            var req = await RequestReader.ReadAsync<RollbackRequest>(ctx);
+            if (req is null || !RequestReader.ValidId(req.PlayerId) || !RequestReader.ValidId(req.TxnId)
+                || !RequestReader.ValidId(req.RefTxnId))
+                return RequestReader.BadRequest();
+            var provider = (ProviderInfo)ctx.Items[SignatureMiddleware.ProviderItemKey]!;
+            return Results.Json(await svc.RollbackAsync(provider.Id, req, ctx.RequestAborted));
+        });
     }
 }
 
