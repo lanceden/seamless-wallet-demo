@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\Wallet.Infrastructure\Wallet.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Wallet.Core\Wallet.Core.csproj" />
     <ProjectReference Include="..\..\src\Wallet.Reconciliation\Wallet.Reconciliation.csproj" />
+    <ProjectReference Include="..\..\src\Provider.Simulator\Provider.Simulator.csproj" />
   </ItemGroup>
 
 </Project>
