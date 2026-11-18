@@ -56,6 +56,7 @@ public sealed class SimulatorOptions
             return n;
         }
 
+        var provider = map.TryGetValue("provider", out var pv) ? pv : "DEMO";
         var o = new SimulatorOptions
         {
             BaseUrl = Str("base-url", "http://localhost:8080"),
@@ -68,7 +69,7 @@ public sealed class SimulatorOptions
             OutOfOrderRate = Rate("out-of-order-rate", 0.02),
             RollbackRate = Rate("rollback-rate", 0.03),
             InjectReportErrors = Int("inject-report-errors", 0, 0),
-            OutDir = Str("out", "reports"),
+            OutDir = map.ContainsKey("out") ? Str("out", "") : Path.Combine("reports", provider),
             Seed = Int("seed", 20260101, 0),
             InitialBalance = Long("initial-balance", 5_000_000, 1),
             RequestTimeoutSeconds = Int("timeout-seconds", 10, 1),

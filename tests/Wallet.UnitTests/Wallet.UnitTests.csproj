@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Wallet.Core\Wallet.Core.csproj" />
     <ProjectReference Include="..\..\src\Provider.Simulator\Provider.Simulator.csproj" />
+    <ProjectReference Include="..\..\src\Wallet.Reconciliation\Wallet.Reconciliation.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@ using Wallet.Api.Endpoints;
 using Wallet.Api.Middleware;
 using Wallet.Core.Models;
 using Wallet.Infrastructure;
+using Wallet.Reconciliation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ var connStr = builder.Configuration.GetConnectionString("Postgres")
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddWalletInfrastructure(connStr);
+builder.Services.AddReconciliation(builder.Configuration);
 
 var app = builder.Build();
 
@@ -34,6 +36,7 @@ app.UseWhen(ctx => ctx.Request.Path.StartsWithSegments("/api/v1"),
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapWalletEndpoints();
 app.MapAdminEndpoints();
+app.MapReconciliationEndpoints();
 
 app.Run();
 

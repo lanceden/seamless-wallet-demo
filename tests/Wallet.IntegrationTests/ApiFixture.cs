@@ -26,12 +26,17 @@ public sealed class ApiFixture : IAsyncLifetime
     private WebApplicationFactory<Program> _factory = null!;
     public HttpClient Http { get; private set; } = null!;
     public string ConnectionString => _pg.GetConnectionString();
+    public string ReportDirectory { get; } = Path.Combine(Path.GetTempPath(), "wallet-reports-" + Guid.NewGuid().ToString("N")[..8]);
 
     public async Task InitializeAsync()
     {
         await _pg.StartAsync();
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b =>
-            b.UseSetting("ConnectionStrings:Postgres", ConnectionString));
+        {
+            b.UseSetting("ConnectionStrings:Postgres", ConnectionString);
+            b.UseSetting("Reconciliation:ReportDirectory", ReportDirectory);
+            b.UseSetting("Reconciliation:JobEnabled", "false"); // 測試不跑背景排程，改由 API 手動觸發
+        });
         Http = _factory.CreateClient();
     }
 
