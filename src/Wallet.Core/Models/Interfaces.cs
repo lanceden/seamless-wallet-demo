@@ -11,6 +11,12 @@ public interface IWalletService
     Task<WalletResponse> BetAsync(int providerId, BetRequest req, CancellationToken ct = default);
 }
 
+public interface IInvariantService
+{
+    /// <summary>回傳違反「餘額 = 成功帳變加總」的玩家；空清單代表帳務一致。</summary>
+    Task<IReadOnlyList<InvariantViolation>> FindViolationsAsync(CancellationToken ct = default);
+}
+
 public interface IAdminService
 {
     Task<(CreatePlayerOutcome Outcome, PlayerDto? Player)> CreatePlayerAsync(string externalId, CancellationToken ct = default);

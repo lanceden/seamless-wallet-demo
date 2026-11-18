@@ -27,6 +27,14 @@ public static class AdminEndpoints
             return r is null ? Results.NotFound(new { error = "player not found" }) : Results.Ok(r);
         });
 
+        // 200 = 帳務一致；500 = 有玩家的餘額與帳變加總對不上（violations 列出是誰）
+        g.MapGet("/health/invariants", async (IInvariantService svc, CancellationToken ct) =>
+        {
+            var violations = await svc.FindViolationsAsync(ct);
+            return Results.Json(new { ok = violations.Count == 0, violations },
+                statusCode: violations.Count == 0 ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError);
+        });
+
         g.MapGet("/players/{id}/transactions", async (string id, IAdminService svc, CancellationToken ct, int page = 1, int pageSize = 50) =>
         {
             var r = await svc.ListTransactionsAsync(id, page, pageSize, ct);

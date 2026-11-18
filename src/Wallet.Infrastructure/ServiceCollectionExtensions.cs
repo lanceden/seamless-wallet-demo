@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IProviderStore, PgProviderStore>();
         services.AddSingleton<IWalletService, PgWalletService>();
         services.AddSingleton<IAdminService, PgAdminService>();
+        services.AddSingleton<IInvariantService, PgInvariantService>();
         return services;
     }
 }

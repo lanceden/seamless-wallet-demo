@@ -21,6 +21,8 @@ public sealed record TransactionRow(
     long BalanceBefore, long BalanceAfter, string Status, string? ErrorCode,
     string? RoundId, string? RefTxnId, DateTime CreatedAt);
 
+public sealed record InvariantViolation(long PlayerId, long Balance, long LedgerSum);
+
 public sealed record PagedResult<T>(int Page, int PageSize, int Total, IReadOnlyList<T> Items);
 
 public enum CreatePlayerOutcome { Created, AlreadyExists }
